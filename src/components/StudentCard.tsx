@@ -2,7 +2,18 @@
 
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
-import type { Student } from "@/data/students";
+
+// Tipe data langsung di dalam file
+interface Student {
+  id: number;
+  name: string;
+  nickname: string;
+  photo: string;
+  hobby: string;
+  dream: string;
+  quote: string;
+  jurusan: string;
+}
 
 interface StudentCardProps {
   student: Student;

@@ -2,7 +2,14 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import type { GalleryImage } from "@/data/gallery";
+
+// Tipe data langsung di dalam file (tidak import dari data/gallery)
+interface GalleryImage {
+  id: number;
+  src: string;
+  title: string;
+  date: string;
+}
 
 interface LightboxProps {
   images: GalleryImage[];

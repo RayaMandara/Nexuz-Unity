@@ -1,8 +1,19 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, Target, Quote, Sparkles } from "lucide-react";
-import type { Student } from "@/data/students";
+import { X, Heart, Target, Quote } from "lucide-react";
+
+// Tipe data langsung di dalam file
+interface Student {
+  id: number;
+  name: string;
+  nickname: string;
+  photo: string;
+  hobby: string;
+  dream: string;
+  quote: string;
+  jurusan: string;
+}
 
 interface StudentModalProps {
   student: Student | null;
