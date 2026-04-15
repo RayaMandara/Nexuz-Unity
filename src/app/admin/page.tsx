@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Users, Image, Clock, LogOut, Plus, Edit, Trash2, X, Upload, Heart, RefreshCw } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { 
+  Users, Image, Clock, LogOut, Plus, Edit, Trash2, X, Upload, 
+  Heart, RefreshCw, Music, Play
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-// Tipe data dengan AKA
+// Tipe data
 interface Student {
   id: number;
   name: string;
   nickname: string;
-  aka: string;  // <-- TAMBAHKAN AKA
+  aka: string;
   photo: string;
   hobby: string;
   dream: string;
@@ -41,21 +44,33 @@ interface Memory {
   avatar: string;
 }
 
+interface Song {
+  id: number;
+  title: string;
+  artist: string;
+  url: string;
+  duration: number;
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("siswa");
   const [isRefreshing, setIsRefreshing] = useState(false);
   
+  // Data state
   const [students, setStudents] = useState<Student[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
+  const [songs, setSongs] = useState<Song[]>([]);
   
+  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [modalType, setModalType] = useState<"add" | "edit">("add");
 
+  // Cek autentikasi
   useEffect(() => {
     const checkAuth = () => {
       const savedAuth = localStorage.getItem("nexuz_admin_auth");
@@ -85,7 +100,8 @@ export default function AdminPage() {
       loadStudents(),
       loadGallery(),
       loadTimeline(),
-      loadMemories()
+      loadMemories(),
+      loadSongs()
     ]);
     setIsRefreshing(false);
   };
@@ -142,7 +158,20 @@ export default function AdminPage() {
     }
   };
 
-  // CRUD Siswa (dengan AKA)
+  const loadSongs = async () => {
+    const { data, error } = await supabase
+      .from('songs')
+      .select('*')
+      .order('id', { ascending: true });
+    
+    if (error) {
+      console.error('Error loading songs:', error);
+    } else {
+      setSongs(data || []);
+    }
+  };
+
+  // CRUD Siswa
   const addStudent = async (student: Omit<Student, "id">) => {
     const newStudent = { ...student, id: Date.now(), jurusan: "RPL" };
     const { error } = await supabase.from('students').insert([newStudent]);
@@ -260,6 +289,31 @@ export default function AdminPage() {
     return true;
   };
 
+  // CRUD Songs
+  const addSong = async (song: Omit<Song, "id">) => {
+    // song.url sudah berisi base64 dari file MP3
+    const newSong = { ...song, id: Date.now(), duration: 0 };
+    const { error } = await supabase.from('songs').insert([newSong]);
+    
+    if (error) {
+      alert('Gagal menambah lagu: ' + error.message);
+      return false;
+    }
+    await loadSongs();
+    return true;
+  };
+
+  const deleteSong = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus lagu ini?")) return false;
+    const { error } = await supabase.from('songs').delete().eq('id', id);
+    if (error) {
+      alert('Gagal hapus lagu: ' + error.message);
+      return false;
+    }
+    await loadSongs();
+    return true;
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("nexuz_admin_auth");
     localStorage.removeItem("nexuz_admin_login_time");
@@ -342,6 +396,15 @@ export default function AdminPage() {
           >
             <Heart className="w-4 h-4" />
             Buku Kenangan ({memories.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("musik")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+              activeTab === "musik" ? "bg-white text-black" : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <Music className="w-4 h-4" />
+            Musik ({songs.length})
           </button>
         </div>
 
@@ -551,6 +614,61 @@ export default function AdminPage() {
             )}
           </div>
         )}
+
+        {/* Musik */}
+        {activeTab === "musik" && (
+          <div>
+            <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+              <h2 className="text-xl font-bold text-white">Manajemen Musik</h2>
+              <button
+                onClick={() => {
+                  setModalType("add");
+                  setEditingItem(null);
+                  setShowModal(true);
+                }}
+                className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+              >
+                <Plus className="w-4 h-4" />
+                Tambah Lagu
+              </button>
+            </div>
+            
+            {songs.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <Music className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Belum ada lagu. Tambah lagu pertama kamu!</p>
+                <p className="text-xs mt-2 text-gray-500">Upload file MP3 (max 5MB)</p>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {songs.map((song) => (
+                  <div key={song.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Play className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white truncate">{song.title}</h3>
+                        <p className="text-gray-400 text-sm truncate">{song.artist}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <audio controls className="h-8 w-32">
+                        <source src={song.url} type="audio/mpeg" />
+                      </audio>
+                      <button
+                        onClick={() => deleteSong(song.id)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition flex-shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Modal Form */}
@@ -580,6 +698,10 @@ export default function AdminPage() {
               } else {
                 success = await updateTimeline(editingItem.id, formData);
               }
+            } else if (activeTab === "musik") {
+              if (modalType === "add") {
+                success = await addSong(formData);
+              }
             }
             if (success) {
               setShowModal(false);
@@ -602,13 +724,38 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData({ ...formData, [fieldName]: reader.result });
-      setUploading(false);
-    };
-    reader.readAsDataURL(file);
+    // Untuk MP3, konversi ke base64
+    if (fieldName === "url") {
+      if (file.type !== "audio/mpeg") {
+        alert("File harus berformat MP3!");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        alert("Ukuran file terlalu besar! Maksimal 10MB.");
+        return;
+      }
+      setUploading(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, [fieldName]: reader.result });
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // Untuk gambar, konversi ke base64
+    if (file.type.startsWith('image/')) {
+      setUploading(true);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, [fieldName]: reader.result });
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      alert("File harus berupa gambar!");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -640,6 +787,11 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
       { name: "icon", label: "Icon (emoji)", type: "text", required: true },
       { name: "date", label: "Tanggal", type: "text", required: true },
     ],
+    musik: [
+      { name: "title", label: "Judul Lagu", type: "text", required: true, placeholder: "Contoh: Class Anthem" },
+      { name: "artist", label: "Artis / Penyanyi", type: "text", required: true, placeholder: "Contoh: Nexuz Class" },
+      { name: "url", label: "File MP3", type: "file", required: true, accept: "audio/mpeg" },
+    ],
   };
 
   const currentFields = fields[tab];
@@ -651,7 +803,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
       <div className="bg-black rounded-2xl border border-white/20 max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4 sticky top-0 bg-black">
           <h3 className="text-xl font-bold text-white">
-            {type === "add" ? "Tambah" : "Edit"} {tab === "siswa" ? "Siswa" : tab === "galeri" ? "Galeri" : "Timeline"}
+            {type === "add" ? "Tambah" : "Edit"} {tab === "siswa" ? "Siswa" : tab === "galeri" ? "Galeri" : tab === "timeline" ? "Timeline" : "Musik"}
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
             <X className="w-5 h-5" />
@@ -668,7 +820,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept={field.accept || "image/*"}
                     onChange={(e) => handleFileUpload(e, field.name)}
                     className="hidden"
                   />
@@ -678,9 +830,14 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                     className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-3 text-white hover:bg-white/20 transition flex items-center justify-center gap-2"
                   >
                     <Upload className="w-4 h-4" />
-                    {uploading ? "Uploading..." : (formData[field.name] ? "Ganti Foto" : "Pilih Foto")}
+                    {uploading ? "Uploading..." : (formData[field.name] ? "Ganti File" : "Pilih File")}
                   </button>
-                  {formData[field.name] && !uploading && (
+                  {formData[field.name] && !uploading && field.name === "url" && (
+                    <div className="mt-2 text-gray-400 text-sm">
+                      ✅ File siap diupload
+                    </div>
+                  )}
+                  {formData[field.name] && !uploading && field.name !== "url" && (
                     <div className="mt-2">
                       <img src={formData[field.name]} alt="Preview" className="w-20 h-20 object-cover rounded-lg" />
                     </div>

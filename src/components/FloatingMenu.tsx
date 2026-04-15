@@ -14,15 +14,14 @@ import {
   X,
 } from "lucide-react";
 
+import { expandMusicPlayer } from "./MusicPlayer";
+
 const FloatingMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
-
-  // Ambil password dari environment variable
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,6 +56,8 @@ const FloatingMenu = () => {
     }
   };
 
+  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
+
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (adminPassword === ADMIN_PASSWORD) {
@@ -74,18 +75,19 @@ const FloatingMenu = () => {
     }
   };
 
-  const buttonPosition = scrolled ? "bottom-20" : "bottom-24";
+  // Posisi tombol: di kiri, di atas music player (tidak diubah)
+  const buttonPosition = scrolled ? "bottom-36" : "bottom-40";
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - Posisi Kiri Bawah (di atas music player) */}
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.5, type: "spring" }}
         onClick={() => setIsOpen(!isOpen)}
         className={`fixed z-50 transition-all duration-300 ${buttonPosition}`}
-        style={{ left: "calc(50% - 30px)" }}
+        style={{ left: "20px" }}
       >
         <motion.div
           animate={{ rotate: isOpen ? 45 : 0 }}
@@ -116,6 +118,7 @@ const FloatingMenu = () => {
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
             />
 
+            {/* Menu Items - Tetap di Tengah Layar */}
             <div
               className="fixed z-50"
               style={{
@@ -123,7 +126,6 @@ const FloatingMenu = () => {
                 top: "50%",
                 transform: "translate(-50%, -50%)",
                 marginLeft: "-30px",
-                marginTop: "-60px",
               }}
             >
               {menuItems.map((item, index) => {
