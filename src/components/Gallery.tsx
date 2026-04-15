@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 import Lightbox from "./Lightbox";
 import { Image as ImageIcon, Calendar } from "lucide-react";
 
@@ -16,36 +17,25 @@ const Gallery = () => {
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  // Load data dari localStorage
   useEffect(() => {
-    const loadGallery = () => {
-      const savedGallery = localStorage.getItem("nexuz_gallery");
-      if (savedGallery) {
-        setGalleryImages(JSON.parse(savedGallery));
-      } else {
-        // Default data jika belum ada
-        const defaultGallery: GalleryImage[] = [
-          { id: 1, src: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400", title: "Wisata Belajar", date: "15 Maret 2025" },
-          { id: 2, src: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400", title: "Juara Lomba", date: "10 Februari 2025" },
-          { id: 3, src: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400", title: "Kegiatan Bakti Sosial", date: "5 Januari 2025" },
-        ];
-        setGalleryImages(defaultGallery);
-        localStorage.setItem("nexuz_gallery", JSON.stringify(defaultGallery));
-      }
-      setIsLoading(false);
-    };
-
-    loadGallery();
-
-    // Listen untuk perubahan dari admin panel
-    const handleStorageChange = () => {
-      loadGallery();
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    fetchGallery();
   }, []);
+
+  const fetchGallery = async () => {
+    const { data, error } = await supabase
+      .from('gallery')
+      .select('*')
+      .order('id', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching gallery:', error);
+    } else {
+      setGalleryImages(data || []);
+    }
+    setLoading(false);
+  };
 
   const handleImageClick = (index: number) => {
     setCurrentImageIndex(index);
@@ -64,7 +54,7 @@ const Gallery = () => {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <section id="galeri" className="py-24 px-6 bg-black">
         <div className="container mx-auto max-w-7xl text-center">

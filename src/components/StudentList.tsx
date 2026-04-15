@@ -2,42 +2,44 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 import StudentCard from "./StudentCard";
 import StudentModal from "./StudentModal";
-import type { Student } from "@/data/students";
+
+interface Student {
+  id: number;
+  name: string;
+  nickname: string;
+  photo: string;
+  hobby: string;
+  dream: string;
+  quote: string;
+  jurusan: string;
+}
 
 const StudentList = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Load data dari localStorage (sync dengan admin panel)
   useEffect(() => {
-    const loadStudents = () => {
-      const savedStudents = localStorage.getItem("nexuz_students");
-      if (savedStudents) {
-        setStudents(JSON.parse(savedStudents));
-      } else {
-        // Default data jika belum ada
-        const defaultStudents: Student[] = [
-          { id: 1, name: "Ahmad Fauzi", nickname: "Ahmad", photo: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150", hobby: "Programming", dream: "Software Engineer", quote: "Kode adalah seni", jurusan: "RPL" },
-          { id: 2, name: "Citra Dewi", nickname: "Citra", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", hobby: "Melukis", dream: "Illustrator", quote: "Warna-warni kehidupan", jurusan: "RPL" },
-          { id: 3, name: "Budi Santoso", nickname: "Budi", photo: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150", hobby: "Basket", dream: "Pebasket", quote: "Jangan pernah menyerah", jurusan: "RPL" },
-        ];
-        setStudents(defaultStudents);
-        localStorage.setItem("nexuz_students", JSON.stringify(defaultStudents));
-      }
-    };
-
-    loadStudents();
-
-    // Listen untuk perubahan dari admin panel
-    const handleStorageChange = () => {
-      loadStudents();
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    fetchStudents();
   }, []);
+
+  const fetchStudents = async () => {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .order('id', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching students:', error);
+    } else {
+      setStudents(data || []);
+    }
+    setLoading(false);
+  };
 
   const handleStudentClick = (student: Student) => {
     setSelectedStudent(student);
@@ -48,6 +50,16 @@ const StudentList = () => {
     setIsModalOpen(false);
     setTimeout(() => setSelectedStudent(null), 300);
   };
+
+  if (loading) {
+    return (
+      <section id="siswa" className="py-24 px-6 bg-black">
+        <div className="container mx-auto max-w-7xl text-center">
+          <div className="text-gray-400">Loading siswa...</div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="siswa" className="py-24 px-6 bg-black">
@@ -68,16 +80,22 @@ const StudentList = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {students.map((student, index) => (
-            <StudentCard
-              key={student.id}
-              student={student}
-              onClick={() => handleStudentClick(student)}
-              index={index}
-            />
-          ))}
-        </div>
+        {students.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            Belum ada data siswa. Silakan tambah di admin panel.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {students.map((student, index) => (
+              <StudentCard
+                key={student.id}
+                student={student}
+                onClick={() => handleStudentClick(student)}
+                index={index}
+              />
+            ))}
+          </div>
+        )}
 
         <StudentModal
           student={selectedStudent}

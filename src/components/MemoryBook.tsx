@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 import { Send, Calendar, User, Heart } from "lucide-react";
 
 interface Memory {
@@ -17,61 +18,33 @@ const MemoryBook = () => {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  // Load data dari localStorage
   useEffect(() => {
-    const loadMemories = () => {
-      const savedMemories = localStorage.getItem("nexuz_memories");
-      if (savedMemories) {
-        setMemories(JSON.parse(savedMemories));
-      } else {
-        // Default data jika belum ada
-        const defaultMemories: Memory[] = [
-          {
-            id: 1,
-            name: "Admin Nexuz",
-            message: "Selamat datang di Buku Kenangan Nexuz! Tuliskan pesan dan kesanmu di sini ya! 📝",
-            date: new Date().toISOString().split("T")[0],
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin"
-          },
-          {
-            id: 2,
-            name: "Ahmad",
-            message: "Kelas Nexuz keren abis! Kenangan terbaik selama sekolah ada di sini 🔥",
-            date: new Date().toISOString().split("T")[0],
-            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmad"
-          },
-        ];
-        setMemories(defaultMemories);
-        localStorage.setItem("nexuz_memories", JSON.stringify(defaultMemories));
-      }
-      setIsLoading(false);
-    };
-
-    loadMemories();
-
-    // Listen untuk perubahan dari admin panel (opsional)
-    const handleStorageChange = () => {
-      loadMemories();
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    fetchMemories();
   }, []);
 
-  const saveToLocalStorage = (data: Memory[]) => {
-    localStorage.setItem("nexuz_memories", JSON.stringify(data));
-    // Trigger event untuk komponen lain
-    window.dispatchEvent(new Event("storage"));
+  const fetchMemories = async () => {
+    const { data, error } = await supabase
+      .from('memories')
+      .select('*')
+      .order('id', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching memories:', error);
+    } else {
+      setMemories(data || []);
+    }
+    setLoading(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !message.trim()) return;
 
     setIsSubmitting(true);
     
-    const newMemory: Memory = {
+    const newMemory = {
       id: Date.now(),
       name: name.trim(),
       message: message.trim(),
@@ -79,17 +52,19 @@ const MemoryBook = () => {
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.trim()}`
     };
 
-    setTimeout(() => {
-      const updatedMemories = [newMemory, ...memories];
-      setMemories(updatedMemories);
-      saveToLocalStorage(updatedMemories);
+    const { error } = await supabase.from('memories').insert([newMemory]);
+    
+    if (error) {
+      alert('Gagal mengirim pesan: ' + error.message);
+    } else {
+      await fetchMemories();
       setName("");
       setMessage("");
-      setIsSubmitting(false);
-    }, 500);
+    }
+    setIsSubmitting(false);
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <section id="kenangan" className="py-24 px-6 bg-black">
         <div className="container mx-auto max-w-6xl text-center">
@@ -102,7 +77,6 @@ const MemoryBook = () => {
   return (
     <section id="kenangan" className="py-24 px-6 bg-black">
       <div className="container mx-auto max-w-6xl">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

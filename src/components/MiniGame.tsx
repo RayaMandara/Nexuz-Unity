@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 import { RefreshCw, Trophy, Star } from "lucide-react";
 
 interface Student {
@@ -27,36 +28,28 @@ const MiniGame = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [gameOver, setGameOver] = useState(false);
 
-  // Load data siswa dari localStorage
   useEffect(() => {
-    const loadStudents = () => {
-      const savedStudents = localStorage.getItem("nexuz_students");
-      if (savedStudents) {
-        const parsedStudents = JSON.parse(savedStudents);
-        setStudents(parsedStudents);
-        return parsedStudents;
-      } else {
-        // Default data jika belum ada
-        const defaultStudents: Student[] = [
-          { id: 1, name: "Ahmad Fauzi", nickname: "Ahmad", photo: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150", hobby: "Programming", dream: "Software Engineer", quote: "Kode adalah seni", jurusan: "RPL" },
-          { id: 2, name: "Citra Dewi", nickname: "Citra", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", hobby: "Melukis", dream: "Illustrator", quote: "Warna-warni kehidupan", jurusan: "RPL" },
-          { id: 3, name: "Budi Santoso", nickname: "Budi", photo: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150", hobby: "Basket", dream: "Pebasket", quote: "Jangan pernah menyerah", jurusan: "RPL" },
-        ];
-        setStudents(defaultStudents);
-        localStorage.setItem("nexuz_students", JSON.stringify(defaultStudents));
-        return defaultStudents;
-      }
-    };
-
-    const studentsData = loadStudents();
-    if (studentsData.length > 0) {
-      newRound(studentsData);
-    }
-    
-    // Load high score dari localStorage
+    fetchStudents();
     const savedHighScore = localStorage.getItem("nexuz_game_highscore");
     if (savedHighScore) setHighScore(parseInt(savedHighScore));
   }, []);
+
+  const fetchStudents = async () => {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .order('id', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching students:', error);
+    } else {
+      setStudents(data || []);
+      if (data && data.length > 0) {
+        newRound(data);
+      }
+    }
+    setIsLoading(false);
+  };
 
   const shuffleArray = (arr: any[]) => {
     return [...arr].sort(() => Math.random() - 0.5);
@@ -69,7 +62,6 @@ const MiniGame = () => {
     const randomIndex = Math.floor(Math.random() * studentsData.length);
     const student = { ...studentsData[randomIndex] };
     
-    // Ambil 3 nama lain untuk pilihan
     const otherNames = studentsData.filter((s: Student) => s.id !== student.id).map((s: Student) => s.name);
     const shuffledOthers = shuffleArray(otherNames);
     const randomOptions = shuffleArray([student.name, ...shuffledOthers.slice(0, 3)]);
@@ -83,7 +75,6 @@ const MiniGame = () => {
     if (isLoading || gameOver || !currentStudent) return;
 
     if (selectedName === currentStudent.name) {
-      // Jawaban benar
       const newScore = score + 10;
       setScore(newScore);
       setMessage("✅ Benar! +10 poin");
@@ -105,7 +96,6 @@ const MiniGame = () => {
         }
       }, 1000);
     } else {
-      // Jawaban salah
       setMessage(`❌ Salah! Itu adalah ${currentStudent.name}`);
       setMessageType("error");
       setGameOver(true);
@@ -120,6 +110,16 @@ const MiniGame = () => {
     newRound();
   };
 
+  if (isLoading) {
+    return (
+      <section id="game" className="py-24 px-6 bg-black min-h-screen flex items-center">
+        <div className="container mx-auto max-w-2xl text-center">
+          <div className="text-gray-400">Loading game...</div>
+        </div>
+      </section>
+    );
+  }
+
   if (students.length === 0) {
     return (
       <section id="game" className="py-24 px-6 bg-black min-h-screen flex items-center">
@@ -133,7 +133,6 @@ const MiniGame = () => {
   return (
     <section id="game" className="py-24 px-6 bg-black min-h-screen flex items-center">
       <div className="container mx-auto max-w-2xl">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -148,7 +147,6 @@ const MiniGame = () => {
           <p className="text-gray-400">Tebak teman sekelas dari foto blur!</p>
         </motion.div>
 
-        {/* Score Board */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -174,7 +172,6 @@ const MiniGame = () => {
           </div>
         </motion.div>
 
-        {/* Game Area */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -182,7 +179,6 @@ const MiniGame = () => {
         >
           {!gameOver ? (
             <>
-              {/* Foto Blur */}
               <div className="relative mb-8">
                 {currentStudent && (
                   <motion.div
@@ -205,7 +201,6 @@ const MiniGame = () => {
                 </p>
               </div>
 
-              {/* Pilihan Jawaban */}
               <div className="grid grid-cols-2 gap-3 mb-6">
                 {options.map((option, index) => (
                   <motion.button
@@ -223,7 +218,6 @@ const MiniGame = () => {
                 ))}
               </div>
 
-              {/* Pesan */}
               <AnimatePresence>
                 {message && (
                   <motion.div
@@ -242,7 +236,6 @@ const MiniGame = () => {
               </AnimatePresence>
             </>
           ) : (
-            // Game Over Screen
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -267,11 +260,9 @@ const MiniGame = () => {
           )}
         </motion.div>
 
-        {/* Info Game */}
         <div className="text-center mt-6 text-gray-500 text-xs">
           <p>💡 Semakin tinggi round, foto semakin jelas!</p>
           <p>🏆 Jawab 10 pertanyaan dengan benar untuk menang</p>
-          <p>📸 Data siswa diambil dari daftar siswa real</p>
         </div>
       </div>
     </section>

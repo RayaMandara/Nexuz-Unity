@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Users, Image, Clock, LogOut, Plus, Edit, Trash2, X, Upload, Heart } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Users, Image, Clock, LogOut, Plus, Edit, Trash2, X, Upload, Heart, RefreshCw } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 // Tipe data
 interface Student {
@@ -43,15 +44,20 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("siswa");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Data state
   const [students, setStudents] = useState<Student[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
+  
+  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [modalType, setModalType] = useState<"add" | "edit">("add");
 
-  // Validasi autentikasi dengan timestamp
+  // Cek autentikasi
   useEffect(() => {
     const checkAuth = () => {
       const savedAuth = localStorage.getItem("nexuz_admin_auth");
@@ -63,7 +69,7 @@ export default function AdminPage() {
       
       if (isValid) {
         setIsAuthenticated(true);
-        loadData();
+        loadAllData();
       } else {
         localStorage.removeItem("nexuz_admin_auth");
         localStorage.removeItem("nexuz_admin_login_time");
@@ -75,119 +81,185 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
-  const loadData = () => {
-    // Load Students
-    const defaultStudents: Student[] = [
-      { id: 1, name: "Ahmad Fauzi", nickname: "Ahmad", photo: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150", hobby: "Programming", dream: "Software Engineer", quote: "Kode adalah seni", jurusan: "RPL" },
-      { id: 2, name: "Citra Dewi", nickname: "Citra", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", hobby: "Melukis", dream: "Illustrator", quote: "Warna-warni kehidupan", jurusan: "RPL" },
-    ];
-    
-    // Load Gallery
-    const defaultGallery: GalleryImage[] = [
-      { id: 1, src: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400", title: "Wisata Belajar", date: "15 Maret 2025" },
-      { id: 2, src: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400", title: "Juara Lomba", date: "10 Februari 2025" },
-    ];
-    
-    // Load Timeline
-    const defaultTimeline: TimelineEvent[] = [
-      { id: 1, year: "2024", title: "Awal Masuk", description: "Momen pertama bertemu", icon: "🎓", date: "15 Juli 2024" },
-      { id: 2, year: "2024", title: "Class Gathering", description: "Acara kumpul bersama", icon: "🤝", date: "20 Agustus 2024" },
-    ];
-
-    // Load Memories
-    const defaultMemories: Memory[] = [
-      { id: 1, name: "Admin Nexuz", message: "Selamat datang di Buku Kenangan Nexuz! Tuliskan pesan dan kesanmu di sini ya! 📝", date: new Date().toISOString().split("T")[0], avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=admin" },
-    ];
-
-    const savedStudents = localStorage.getItem("nexuz_students");
-    const savedGallery = localStorage.getItem("nexuz_gallery");
-    const savedTimeline = localStorage.getItem("nexuz_timeline");
-    const savedMemories = localStorage.getItem("nexuz_memories");
-    
-    setStudents(savedStudents ? JSON.parse(savedStudents) : defaultStudents);
-    setGallery(savedGallery ? JSON.parse(savedGallery) : defaultGallery);
-    setTimeline(savedTimeline ? JSON.parse(savedTimeline) : defaultTimeline);
-    setMemories(savedMemories ? JSON.parse(savedMemories) : defaultMemories);
+  const loadAllData = async () => {
+    setIsRefreshing(true);
+    await Promise.all([
+      loadStudents(),
+      loadGallery(),
+      loadTimeline(),
+      loadMemories()
+    ]);
+    setIsRefreshing(false);
   };
 
-  const saveToLocalStorage = (key: string, data: any) => {
-    localStorage.setItem(key, JSON.stringify(data));
-    window.dispatchEvent(new Event("storage"));
+  const loadStudents = async () => {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .order('id', { ascending: true });
+    
+    if (error) {
+      console.error('Error loading students:', error);
+    } else {
+      setStudents(data || []);
+    }
+  };
+
+  const loadGallery = async () => {
+    const { data, error } = await supabase
+      .from('gallery')
+      .select('*')
+      .order('id', { ascending: true });
+    
+    if (error) {
+      console.error('Error loading gallery:', error);
+    } else {
+      setGallery(data || []);
+    }
+  };
+
+  const loadTimeline = async () => {
+    const { data, error } = await supabase
+      .from('timeline')
+      .select('*')
+      .order('id', { ascending: true });
+    
+    if (error) {
+      console.error('Error loading timeline:', error);
+    } else {
+      setTimeline(data || []);
+    }
+  };
+
+  const loadMemories = async () => {
+    const { data, error } = await supabase
+      .from('memories')
+      .select('*')
+      .order('id', { ascending: false });
+    
+    if (error) {
+      console.error('Error loading memories:', error);
+    } else {
+      setMemories(data || []);
+    }
   };
 
   // CRUD Siswa
-  const addStudent = (student: Omit<Student, "id" | "jurusan">) => {
+  const addStudent = async (student: Omit<Student, "id">) => {
     const newStudent = { ...student, id: Date.now(), jurusan: "RPL" };
-    const updated = [...students, newStudent];
-    setStudents(updated);
-    saveToLocalStorage("nexuz_students", updated);
-  };
-
-  const updateStudent = (id: number, updatedData: Partial<Student>) => {
-    const updated = students.map(s => s.id === id ? { ...s, ...updatedData, jurusan: "RPL" } : s);
-    setStudents(updated);
-    saveToLocalStorage("nexuz_students", updated);
-  };
-
-  const deleteStudent = (id: number) => {
-    if (confirm("Yakin ingin menghapus siswa ini?")) {
-      const updated = students.filter(s => s.id !== id);
-      setStudents(updated);
-      saveToLocalStorage("nexuz_students", updated);
+    const { error } = await supabase.from('students').insert([newStudent]);
+    
+    if (error) {
+      alert('Gagal menambah siswa: ' + error.message);
+      return false;
     }
+    await loadStudents();
+    return true;
+  };
+
+  const updateStudent = async (id: number, updatedData: Partial<Student>) => {
+    const { error } = await supabase
+      .from('students')
+      .update({ ...updatedData, jurusan: "RPL" })
+      .eq('id', id);
+    
+    if (error) {
+      alert('Gagal update siswa: ' + error.message);
+      return false;
+    }
+    await loadStudents();
+    return true;
+  };
+
+  const deleteStudent = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus siswa ini?")) return false;
+    const { error } = await supabase.from('students').delete().eq('id', id);
+    if (error) {
+      alert('Gagal hapus siswa: ' + error.message);
+      return false;
+    }
+    await loadStudents();
+    return true;
   };
 
   // CRUD Gallery
-  const addGallery = (item: Omit<GalleryImage, "id">) => {
+  const addGallery = async (item: Omit<GalleryImage, "id">) => {
     const newItem = { ...item, id: Date.now() };
-    const updated = [...gallery, newItem];
-    setGallery(updated);
-    saveToLocalStorage("nexuz_gallery", updated);
-  };
-
-  const updateGallery = (id: number, updatedData: Partial<GalleryImage>) => {
-    const updated = gallery.map(g => g.id === id ? { ...g, ...updatedData } : g);
-    setGallery(updated);
-    saveToLocalStorage("nexuz_gallery", updated);
-  };
-
-  const deleteGallery = (id: number) => {
-    if (confirm("Yakin ingin menghapus foto ini?")) {
-      const updated = gallery.filter(g => g.id !== id);
-      setGallery(updated);
-      saveToLocalStorage("nexuz_gallery", updated);
+    const { error } = await supabase.from('gallery').insert([newItem]);
+    
+    if (error) {
+      alert('Gagal menambah foto: ' + error.message);
+      return false;
     }
+    await loadGallery();
+    return true;
+  };
+
+  const updateGallery = async (id: number, updatedData: Partial<GalleryImage>) => {
+    const { error } = await supabase.from('gallery').update(updatedData).eq('id', id);
+    if (error) {
+      alert('Gagal update foto: ' + error.message);
+      return false;
+    }
+    await loadGallery();
+    return true;
+  };
+
+  const deleteGallery = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus foto ini?")) return false;
+    const { error } = await supabase.from('gallery').delete().eq('id', id);
+    if (error) {
+      alert('Gagal hapus foto: ' + error.message);
+      return false;
+    }
+    await loadGallery();
+    return true;
   };
 
   // CRUD Timeline
-  const addTimeline = (item: Omit<TimelineEvent, "id">) => {
+  const addTimeline = async (item: Omit<TimelineEvent, "id">) => {
     const newItem = { ...item, id: Date.now() };
-    const updated = [...timeline, newItem];
-    setTimeline(updated);
-    saveToLocalStorage("nexuz_timeline", updated);
-  };
-
-  const updateTimeline = (id: number, updatedData: Partial<TimelineEvent>) => {
-    const updated = timeline.map(t => t.id === id ? { ...t, ...updatedData } : t);
-    setTimeline(updated);
-    saveToLocalStorage("nexuz_timeline", updated);
-  };
-
-  const deleteTimeline = (id: number) => {
-    if (confirm("Yakin ingin menghapus event ini?")) {
-      const updated = timeline.filter(t => t.id !== id);
-      setTimeline(updated);
-      saveToLocalStorage("nexuz_timeline", updated);
+    const { error } = await supabase.from('timeline').insert([newItem]);
+    
+    if (error) {
+      alert('Gagal menambah event: ' + error.message);
+      return false;
     }
+    await loadTimeline();
+    return true;
+  };
+
+  const updateTimeline = async (id: number, updatedData: Partial<TimelineEvent>) => {
+    const { error } = await supabase.from('timeline').update(updatedData).eq('id', id);
+    if (error) {
+      alert('Gagal update event: ' + error.message);
+      return false;
+    }
+    await loadTimeline();
+    return true;
+  };
+
+  const deleteTimeline = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus event ini?")) return false;
+    const { error } = await supabase.from('timeline').delete().eq('id', id);
+    if (error) {
+      alert('Gagal hapus event: ' + error.message);
+      return false;
+    }
+    await loadTimeline();
+    return true;
   };
 
   // CRUD Memories
-  const deleteMemory = (id: number) => {
-    if (confirm("Yakin ingin menghapus pesan ini?")) {
-      const updated = memories.filter(m => m.id !== id);
-      setMemories(updated);
-      saveToLocalStorage("nexuz_memories", updated);
+  const deleteMemory = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus pesan ini?")) return false;
+    const { error } = await supabase.from('memories').delete().eq('id', id);
+    if (error) {
+      alert('Gagal hapus pesan: ' + error.message);
+      return false;
     }
+    await loadMemories();
+    return true;
   };
 
   const handleLogout = () => {
@@ -214,13 +286,23 @@ export default function AdminPage() {
       <div className="bg-white/5 border-b border-white/10 px-6 py-4 sticky top-0 z-10 backdrop-blur">
         <div className="container mx-auto flex justify-between items-center flex-wrap gap-4">
           <h1 className="text-xl font-bold text-white">Admin Panel Nexuz</h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={loadAllData}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
@@ -265,6 +347,16 @@ export default function AdminPage() {
           </button>
         </div>
 
+        {/* Loading Overlay saat refresh */}
+        {isRefreshing && (
+          <div className="fixed inset-0 bg-black/50 z-20 flex items-center justify-center">
+            <div className="bg-black/90 rounded-xl p-4 flex items-center gap-3">
+              <RefreshCw className="w-5 h-5 text-white animate-spin" />
+              <span className="text-white">Memuat data...</span>
+            </div>
+          </div>
+        )}
+
         {/* Data Siswa */}
         {activeTab === "siswa" && (
           <div>
@@ -283,37 +375,41 @@ export default function AdminPage() {
               </button>
             </div>
             
-            <div className="grid gap-4">
-              {students.map((student) => (
-                <div key={student.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    <img src={student.photo} alt={student.name} className="w-12 h-12 rounded-full object-cover" />
-                    <div>
-                      <h3 className="font-semibold text-white">{student.name}</h3>
-                      <p className="text-gray-400 text-sm">{student.nickname}</p>
+            {students.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">Belum ada data siswa</div>
+            ) : (
+              <div className="grid gap-3">
+                {students.map((student) => (
+                  <div key={student.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition">
+                    <div className="flex items-center gap-4">
+                      <img src={student.photo} alt={student.name} className="w-12 h-12 rounded-full object-cover" />
+                      <div>
+                        <h3 className="font-semibold text-white">{student.name}</h3>
+                        <p className="text-gray-400 text-sm">{student.nickname}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setModalType("edit");
+                          setEditingItem(student);
+                          setShowModal(true);
+                        }}
+                        className="p-2 hover:bg-white/10 rounded-lg transition"
+                      >
+                        <Edit className="w-4 h-4 text-yellow-400" />
+                      </button>
+                      <button
+                        onClick={() => deleteStudent(student.id)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setModalType("edit");
-                        setEditingItem(student);
-                        setShowModal(true);
-                      }}
-                      className="p-2 hover:bg-white/10 rounded-lg transition"
-                    >
-                      <Edit className="w-4 h-4 text-yellow-400" />
-                    </button>
-                    <button
-                      onClick={() => deleteStudent(student.id)}
-                      className="p-2 hover:bg-white/10 rounded-lg transition"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -335,37 +431,41 @@ export default function AdminPage() {
               </button>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-4">
-              {gallery.map((item) => (
-                <div key={item.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    <img src={item.src} alt={item.title} className="w-16 h-16 object-cover rounded-lg" />
-                    <div>
-                      <h3 className="font-semibold text-white">{item.title}</h3>
-                      <p className="text-gray-400 text-sm">{item.date}</p>
+            {gallery.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">Belum ada foto galeri</div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {gallery.map((item) => (
+                  <div key={item.id} className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col gap-3 hover:bg-white/10 transition">
+                    <img src={item.src} alt={item.title} className="w-full h-40 object-cover rounded-lg" />
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-semibold text-white">{item.title}</h3>
+                        <p className="text-gray-400 text-sm">{item.date}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => {
+                            setModalType("edit");
+                            setEditingItem(item);
+                            setShowModal(true);
+                          }}
+                          className="p-2 hover:bg-white/10 rounded-lg transition"
+                        >
+                          <Edit className="w-4 h-4 text-yellow-400" />
+                        </button>
+                        <button
+                          onClick={() => deleteGallery(item.id)}
+                          className="p-2 hover:bg-white/10 rounded-lg transition"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-400" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setModalType("edit");
-                        setEditingItem(item);
-                        setShowModal(true);
-                      }}
-                      className="p-2 hover:bg-white/10 rounded-lg transition"
-                    >
-                      <Edit className="w-4 h-4 text-yellow-400" />
-                    </button>
-                    <button
-                      onClick={() => deleteGallery(item.id)}
-                      className="p-2 hover:bg-white/10 rounded-lg transition"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -387,38 +487,42 @@ export default function AdminPage() {
               </button>
             </div>
             
-            <div className="grid gap-4">
-              {timeline.map((item) => (
-                <div key={item.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{item.icon}</span>
-                      <h3 className="font-semibold text-white">{item.title}</h3>
+            {timeline.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">Belum ada event timeline</div>
+            ) : (
+              <div className="grid gap-3">
+                {timeline.map((item) => (
+                  <div key={item.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{item.icon}</span>
+                        <h3 className="font-semibold text-white">{item.title}</h3>
+                      </div>
+                      <p className="text-gray-400 text-sm">{item.year} • {item.date}</p>
+                      <p className="text-gray-400 text-sm mt-1 line-clamp-2">{item.description}</p>
                     </div>
-                    <p className="text-gray-400 text-sm">{item.year} • {item.date}</p>
-                    <p className="text-gray-400 text-sm mt-1">{item.description.substring(0, 100)}...</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setModalType("edit");
+                          setEditingItem(item);
+                          setShowModal(true);
+                        }}
+                        className="p-2 hover:bg-white/10 rounded-lg transition"
+                      >
+                        <Edit className="w-4 h-4 text-yellow-400" />
+                      </button>
+                      <button
+                        onClick={() => deleteTimeline(item.id)}
+                        className="p-2 hover:bg-white/10 rounded-lg transition"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        setModalType("edit");
-                        setEditingItem(item);
-                        setShowModal(true);
-                      }}
-                      className="p-2 hover:bg-white/10 rounded-lg transition"
-                    >
-                      <Edit className="w-4 h-4 text-yellow-400" />
-                    </button>
-                    <button
-                      onClick={() => deleteTimeline(item.id)}
-                      className="p-2 hover:bg-white/10 rounded-lg transition"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -427,19 +531,16 @@ export default function AdminPage() {
           <div>
             <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
               <h2 className="text-xl font-bold text-white">Manajemen Buku Kenangan</h2>
-              <p className="text-gray-400 text-sm">Total pesan: {memories.length}</p>
             </div>
             
             {memories.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
-                Belum ada pesan kenangan.
-              </div>
+              <div className="text-center py-12 text-gray-400">Belum ada pesan kenangan</div>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid gap-3">
                 {memories.map((memory) => (
-                  <div key={memory.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4">
+                  <div key={memory.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition">
                     <div className="flex items-center gap-4 flex-1">
-                      <img src={memory.avatar} alt={memory.name} className="w-12 h-12 rounded-full object-cover" />
+                      <img src={memory.avatar} alt={memory.name} className="w-10 h-10 rounded-full object-cover" />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-semibold text-white">{memory.name}</h3>
@@ -469,18 +570,30 @@ export default function AdminPage() {
           data={editingItem}
           tab={activeTab}
           onClose={() => setShowModal(false)}
-          onSave={(data: any) => {
+          onSave={async (formData: any) => {
+            let success = false;
             if (activeTab === "siswa") {
-              if (modalType === "add") addStudent(data);
-              else updateStudent(editingItem.id, data);
+              if (modalType === "add") {
+                success = await addStudent(formData);
+              } else {
+                success = await updateStudent(editingItem.id, formData);
+              }
             } else if (activeTab === "galeri") {
-              if (modalType === "add") addGallery(data);
-              else updateGallery(editingItem.id, data);
+              if (modalType === "add") {
+                success = await addGallery(formData);
+              } else {
+                success = await updateGallery(editingItem.id, formData);
+              }
             } else if (activeTab === "timeline") {
-              if (modalType === "add") addTimeline(data);
-              else updateTimeline(editingItem.id, data);
+              if (modalType === "add") {
+                success = await addTimeline(formData);
+              } else {
+                success = await updateTimeline(editingItem.id, formData);
+              }
             }
-            setShowModal(false);
+            if (success) {
+              setShowModal(false);
+            }
           }}
         />
       )}
@@ -488,16 +601,18 @@ export default function AdminPage() {
   );
 }
 
-// Modal Form Component (sama seperti sebelumnya)
+// Modal Form Component
 function ModalForm({ type, data, tab, onClose, onSave }: any) {
   const [formData, setFormData] = useState(data || {});
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Compress dan konversi ke base64
     setUploading(true);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -507,17 +622,24 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
     reader.readAsDataURL(file);
   };
 
-  const fields = {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    await onSave(formData);
+    setSaving(false);
+  };
+
+  const fields: Record<string, any[]> = {
     siswa: [
       { name: "name", label: "Nama Lengkap", type: "text", required: true },
       { name: "nickname", label: "Panggilan", type: "text", required: true },
-      { name: "photo", label: "Foto Profil", type: "file", required: true },
+      { name: "photo", label: "Foto Profil", type: "file", required: type === "add" },
       { name: "hobby", label: "Hobi", type: "text", required: true },
       { name: "dream", label: "Cita-cita", type: "text", required: true },
       { name: "quote", label: "Quote Pribadi", type: "textarea", required: true },
     ],
     galeri: [
-      { name: "src", label: "Foto Galeri", type: "file", required: true },
+      { name: "src", label: "Foto Galeri", type: "file", required: type === "add" },
       { name: "title", label: "Judul", type: "text", required: true },
       { name: "date", label: "Tanggal", type: "text", required: true },
     ],
@@ -530,14 +652,14 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
     ],
   };
 
-  const currentFields = fields[tab as keyof typeof fields];
+  const currentFields = fields[tab];
 
   if (!currentFields) return null;
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur z-50 flex items-center justify-center p-4">
       <div className="bg-black rounded-2xl border border-white/20 max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4 sticky top-0 bg-black">
           <h3 className="text-xl font-bold text-white">
             {type === "add" ? "Tambah" : "Edit"} {tab === "siswa" ? "Siswa" : tab === "galeri" ? "Galeri" : "Timeline"}
           </h3>
@@ -546,7 +668,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
           </button>
         </div>
 
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {currentFields.map((field: any) => (
             <div key={field.name}>
               <label className="block text-gray-400 text-sm mb-1">{field.label}</label>
@@ -580,6 +702,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                   onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
                   className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-white/50"
                   rows={3}
+                  required={field.required}
                 />
               ) : (
                 <input
@@ -587,27 +710,29 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                   value={formData[field.name] || ""}
                   onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
                   className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-white/50"
+                  required={field.required}
                 />
               )}
             </div>
           ))}
-        </div>
 
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 border border-white/20 rounded-lg text-white hover:bg-white/10"
-          >
-            Batal
-          </button>
-          <button
-            onClick={() => onSave(formData)}
-            disabled={uploading}
-            className="flex-1 px-4 py-2 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 disabled:opacity-50"
-          >
-            Simpan
-          </button>
-        </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-white/20 rounded-lg text-white hover:bg-white/10"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={uploading || saving}
+              className="flex-1 px-4 py-2 bg-white text-black rounded-lg font-semibold hover:bg-gray-200 disabled:opacity-50"
+            >
+              {saving ? "Menyimpan..." : "Simpan"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
