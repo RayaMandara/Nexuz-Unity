@@ -3,11 +3,11 @@
 import { motion } from "framer-motion";
 import { User } from "lucide-react";
 
-// Tipe data langsung di dalam file
 interface Student {
   id: number;
   name: string;
   nickname: string;
+  aka: string;
   photo: string;
   hobby: string;
   dream: string;
@@ -36,7 +36,7 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
         <div className="relative overflow-hidden h-64">
           <img
             src={student.photo}
-            alt={student.name}
+            alt={student.nickname}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             loading="lazy"
           />
@@ -44,8 +44,8 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
         </div>
 
         <div className="p-5">
-          <h3 className="text-xl font-bold text-white mb-1">{student.name}</h3>
-          <p className="text-gray-400 text-sm mb-3">{student.nickname}</p>
+          <h3 className="text-xl font-bold text-white mb-1">{student.nickname}</h3>
+          <p className="text-gray-400 text-sm mb-3">{student.aka || student.nickname}</p>
           
           <div className="flex items-center gap-2 text-gray-400 text-sm">
             <User className="w-4 h-4" />

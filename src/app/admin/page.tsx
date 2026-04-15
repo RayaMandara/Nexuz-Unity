@@ -4,11 +4,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Users, Image, Clock, LogOut, Plus, Edit, Trash2, X, Upload, Heart, RefreshCw } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-// Tipe data
+// Tipe data dengan AKA
 interface Student {
   id: number;
   name: string;
   nickname: string;
+  aka: string;  // <-- TAMBAHKAN AKA
   photo: string;
   hobby: string;
   dream: string;
@@ -46,18 +47,15 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("siswa");
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Data state
   const [students, setStudents] = useState<Student[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
   
-  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [modalType, setModalType] = useState<"add" | "edit">("add");
 
-  // Cek autentikasi
   useEffect(() => {
     const checkAuth = () => {
       const savedAuth = localStorage.getItem("nexuz_admin_auth");
@@ -144,7 +142,7 @@ export default function AdminPage() {
     }
   };
 
-  // CRUD Siswa
+  // CRUD Siswa (dengan AKA)
   const addStudent = async (student: Omit<Student, "id">) => {
     const newStudent = { ...student, id: Date.now(), jurusan: "RPL" };
     const { error } = await supabase.from('students').insert([newStudent]);
@@ -347,16 +345,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Loading Overlay saat refresh */}
-        {isRefreshing && (
-          <div className="fixed inset-0 bg-black/50 z-20 flex items-center justify-center">
-            <div className="bg-black/90 rounded-xl p-4 flex items-center gap-3">
-              <RefreshCw className="w-5 h-5 text-white animate-spin" />
-              <span className="text-white">Memuat data...</span>
-            </div>
-          </div>
-        )}
-
         {/* Data Siswa */}
         {activeTab === "siswa" && (
           <div>
@@ -385,7 +373,9 @@ export default function AdminPage() {
                       <img src={student.photo} alt={student.name} className="w-12 h-12 rounded-full object-cover" />
                       <div>
                         <h3 className="font-semibold text-white">{student.name}</h3>
-                        <p className="text-gray-400 text-sm">{student.nickname}</p>
+                        <p className="text-gray-400 text-sm">
+                          {student.nickname} {student.aka ? `• ${student.aka}` : ''}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -612,7 +602,6 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Compress dan konversi ke base64
     setUploading(true);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -633,6 +622,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
     siswa: [
       { name: "name", label: "Nama Lengkap", type: "text", required: true },
       { name: "nickname", label: "Panggilan", type: "text", required: true },
+      { name: "aka", label: "AKA (As Known As)", type: "text", required: false, placeholder: "Contoh: Si Cerdas, The Master" },
       { name: "photo", label: "Foto Profil", type: "file", required: type === "add" },
       { name: "hobby", label: "Hobi", type: "text", required: true },
       { name: "dream", label: "Cita-cita", type: "text", required: true },
@@ -703,6 +693,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                   className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-white/50"
                   rows={3}
                   required={field.required}
+                  placeholder={field.placeholder}
                 />
               ) : (
                 <input
@@ -711,6 +702,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                   onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
                   className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-white/50"
                   required={field.required}
+                  placeholder={field.placeholder}
                 />
               )}
             </div>

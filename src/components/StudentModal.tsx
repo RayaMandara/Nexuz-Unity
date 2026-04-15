@@ -3,11 +3,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, Target, Quote } from "lucide-react";
 
-// Tipe data langsung di dalam file
 interface Student {
   id: number;
   name: string;
   nickname: string;
+  aka: string;
   photo: string;
   hobby: string;
   dream: string;
@@ -68,12 +68,19 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                   >
+                    {/* Nama Lengkap */}
                     <h2 className="text-3xl font-bold text-white mb-1">
                       {student.name}
                     </h2>
-                    <p className="text-gray-400 mb-4">{student.nickname}</p>
+                    {/* Tampilkan AKA dan Nickname */}
+                    <p className="text-gray-400 mb-4">
+                      {student.aka && <span className="text-white font-medium">{student.aka}</span>}
+                      {student.aka && student.nickname && <span> • </span>}
+                      {student.nickname && <span>{student.nickname}</span>}
+                    </p>
                     
                     <div className="space-y-4">
+                      {/* Hobi */}
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
                           <Heart className="w-4 h-4 text-white" />
@@ -84,6 +91,7 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                         </div>
                       </div>
 
+                      {/* Cita-cita */}
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
                           <Target className="w-4 h-4 text-white" />
@@ -94,6 +102,7 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                         </div>
                       </div>
 
+                      {/* Quote */}
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
                           <Quote className="w-4 h-4 text-white" />

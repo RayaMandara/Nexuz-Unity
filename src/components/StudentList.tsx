@@ -10,6 +10,7 @@ interface Student {
   id: number;
   name: string;
   nickname: string;
+  aka: string,
   photo: string;
   hobby: string;
   dream: string;
