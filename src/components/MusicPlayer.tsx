@@ -10,7 +10,6 @@ import {
   Volume2,
   VolumeX,
   Music,
-  X,
   Minimize2,
   Shuffle,
   Repeat,
@@ -81,13 +80,34 @@ const MusicPlayer = () => {
     }
   }, [volume]);
 
+  // Fungsi untuk memutar lagu (otomatis play)
+  const playSong = (index: number) => {
+    setCurrentSongIndex(index);
+    setIsPlaying(true);
+  };
+
+  // Auto play saat currentSongIndex berubah
+  useEffect(() => {
+    if (songs.length > 0 && audioRef.current) {
+      audioRef.current.play().catch(e => console.log("Auto play error:", e));
+      setIsPlaying(true);
+    }
+  }, [currentSongIndex, songs]);
+
   // Auto play next song when current ends
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const handleEnded = () => {
-      playNext();
+      if (isRepeat) {
+        // Repeat: putar ulang lagu yang sama
+        audio.currentTime = 0;
+        audio.play();
+      } else {
+        // Next: panggil playNext
+        playNext();
+      }
     };
 
     audio.addEventListener('ended', handleEnded);
@@ -98,15 +118,17 @@ const MusicPlayer = () => {
     if (songs.length === 0) return;
 
     let nextIndex;
-    if (isRepeat) {
-      nextIndex = currentSongIndex;
-    } else if (isShuffle) {
-      nextIndex = Math.floor(Math.random() * songs.length);
+    if (isShuffle) {
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * songs.length);
+      } while (randomIndex === currentSongIndex && songs.length > 1);
+      nextIndex = randomIndex;
     } else {
       nextIndex = (currentSongIndex + 1) % songs.length;
     }
     
-    setCurrentSongIndex(nextIndex);
+    playSong(nextIndex);
   };
 
   const playPrevious = () => {
@@ -114,12 +136,16 @@ const MusicPlayer = () => {
     
     let prevIndex;
     if (isShuffle) {
-      prevIndex = Math.floor(Math.random() * songs.length);
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * songs.length);
+      } while (randomIndex === currentSongIndex && songs.length > 1);
+      prevIndex = randomIndex;
     } else {
       prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
     }
     
-    setCurrentSongIndex(prevIndex);
+    playSong(prevIndex);
   };
 
   const togglePlay = () => {
@@ -128,10 +154,11 @@ const MusicPlayer = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        setIsPlaying(false);
       } else {
         audioRef.current.play();
+        setIsPlaying(true);
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -196,7 +223,7 @@ const MusicPlayer = () => {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", damping: 25, delay: 0.3 }}
             onClick={() => setIsMinimized(false)}
-            className="fixed bottom-24 left-6 z-50 w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 group"
+            className="fixed bottom-28 left-6 z-50 w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 group"
           >
             <Music className="w-5 h-5 text-white group-hover:text-black transition-colors" />
           </motion.button>
@@ -255,18 +282,21 @@ const MusicPlayer = () => {
               <button
                 onClick={() => setIsShuffle(!isShuffle)}
                 className={`transition-colors ${isShuffle ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+                title={isShuffle ? "Shuffle ON" : "Shuffle OFF"}
               >
                 <Shuffle className="w-4 h-4" />
               </button>
               <button
                 onClick={playPrevious}
                 className="text-gray-400 hover:text-white transition-colors"
+                title="Previous"
               >
                 <SkipBack className="w-5 h-5" />
               </button>
               <button
                 onClick={togglePlay}
                 className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+                title={isPlaying ? "Pause" : "Play"}
               >
                 {isPlaying ? (
                   <Pause className="w-5 h-5 text-black" />
@@ -277,12 +307,14 @@ const MusicPlayer = () => {
               <button
                 onClick={playNext}
                 className="text-gray-400 hover:text-white transition-colors"
+                title="Next"
               >
                 <SkipForward className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setIsRepeat(!isRepeat)}
                 className={`transition-colors ${isRepeat ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+                title={isRepeat ? "Repeat ON" : "Repeat OFF"}
               >
                 <Repeat className="w-4 h-4" />
               </button>
@@ -293,6 +325,7 @@ const MusicPlayer = () => {
               <button
                 onClick={toggleMute}
                 className="text-gray-400 hover:text-white transition-colors"
+                title={isMuted ? "Unmute" : "Mute"}
               >
                 {isMuted || volume === 0 ? (
                   <VolumeX className="w-4 h-4" />
@@ -314,7 +347,7 @@ const MusicPlayer = () => {
             {/* Playlist Info */}
             <div className="mt-2 pt-2 border-t border-white/10 text-center">
               <p className="text-gray-500 text-xs">
-                {songs.length} lagu • {isShuffle ? "Shuffle ON" : isRepeat ? "Repeat ON" : "Normal"}
+                {songs.length} lagu • {isShuffle ? "Shuffle" : isRepeat ? "Repeat" : "▶ Normal"}
               </p>
             </div>
           </motion.div>

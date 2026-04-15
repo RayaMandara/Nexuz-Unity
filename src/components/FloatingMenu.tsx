@@ -61,7 +61,6 @@ const FloatingMenu = () => {
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (adminPassword === ADMIN_PASSWORD) {
-      // Simpan auth dengan timestamp (24 jam)
       const loginTime = Date.now();
       localStorage.setItem("nexuz_admin_auth", "true");
       localStorage.setItem("nexuz_admin_login_time", loginTime.toString());
@@ -75,8 +74,10 @@ const FloatingMenu = () => {
     }
   };
 
-  // Posisi tombol: di kiri, di atas music player (tidak diubah)
-  const buttonPosition = scrolled ? "bottom-36" : "bottom-40";
+  // Posisi tombol: di kiri, di ATAS music player (jarak aman)
+  // Music player ada di bottom-6 (24px) dan icon minimized di bottom-28 (112px)
+  // Maka tombol floating menu di bottom-44 (176px) agar tidak benturan
+  const buttonPosition = scrolled ? "bottom-44" : "bottom-48";
 
   return (
     <>

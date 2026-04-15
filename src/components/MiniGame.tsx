@@ -62,9 +62,9 @@ const MiniGame = () => {
     const randomIndex = Math.floor(Math.random() * studentsData.length);
     const student = { ...studentsData[randomIndex] };
     
-    const otherNames = studentsData.filter((s: Student) => s.id !== student.id).map((s: Student) => s.name);
+    const otherNames = studentsData.filter((s: Student) => s.id !== student.id).map((s: Student) => s.nickname);
     const shuffledOthers = shuffleArray(otherNames);
-    const randomOptions = shuffleArray([student.name, ...shuffledOthers.slice(0, 3)]);
+    const randomOptions = shuffleArray([student.nickname, ...shuffledOthers.slice(0, 3)]);
     
     setCurrentStudent(student);
     setOptions(randomOptions);
@@ -74,7 +74,7 @@ const MiniGame = () => {
   const handleAnswer = (selectedName: string) => {
     if (isLoading || gameOver || !currentStudent) return;
 
-    if (selectedName === currentStudent.name) {
+    if (selectedName === currentStudent.nickname) {
       const newScore = score + 10;
       setScore(newScore);
       setMessage("✅ Benar! +10 poin");
@@ -96,7 +96,7 @@ const MiniGame = () => {
         }
       }, 1000);
     } else {
-      setMessage(`❌ Salah! Itu adalah ${currentStudent.name}`);
+      setMessage(`❌ Salah! Itu adalah ${currentStudent.nickname}`);
       setMessageType("error");
       setGameOver(true);
     }
