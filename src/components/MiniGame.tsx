@@ -18,6 +18,7 @@ interface Student {
 
 const MiniGame = () => {
   const [students, setStudents] = useState<Student[]>([]);
+  const [remainingStudents, setRemainingStudents] = useState<Student[]>([]);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [options, setOptions] = useState<string[]>([]);
   const [score, setScore] = useState(0);
@@ -44,6 +45,7 @@ const MiniGame = () => {
       console.error('Error fetching students:', error);
     } else {
       setStudents(data || []);
+      setRemainingStudents([...(data || [])]); // Copy semua siswa
       if (data && data.length > 0) {
         newRound(data);
       }
@@ -52,18 +54,36 @@ const MiniGame = () => {
   };
 
   const shuffleArray = (arr: any[]) => {
-    return [...arr].sort(() => Math.random() - 0.5);
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   };
 
   const newRound = (studentsData = students) => {
     if (studentsData.length === 0) return;
     
     setIsLoading(true);
-    const randomIndex = Math.floor(Math.random() * studentsData.length);
-    const student = { ...studentsData[randomIndex] };
     
-    const otherNames = studentsData.filter((s: Student) => s.id !== student.id).map((s: Student) => s.nickname);
-    const shuffledOthers = shuffleArray(otherNames);
+    // Ambil siswa berikutnya dari daftar yang belum dipakai
+    let student;
+    if (remainingStudents.length === 0) {
+      // Reset jika sudah habis
+      setRemainingStudents(shuffleArray([...studentsData]));
+      student = remainingStudents[0] || studentsData[0];
+    } else {
+      student = remainingStudents[0];
+    }
+    
+    // Hapus siswa yang sudah dipakai
+    setRemainingStudents(prev => prev.slice(1));
+    
+    const otherNames = studentsData
+      .filter((s: Student) => s.id !== student.id)
+      .map((s: Student) => s.nickname);
+    
+    const shuffledOthers = shuffleArray([...otherNames]);
     const randomOptions = shuffleArray([student.nickname, ...shuffledOthers.slice(0, 3)]);
     
     setCurrentStudent(student);
@@ -107,6 +127,7 @@ const MiniGame = () => {
     setRound(1);
     setGameOver(false);
     setMessage("");
+    setRemainingStudents(shuffleArray([...students]));
     newRound();
   };
 
@@ -263,6 +284,7 @@ const MiniGame = () => {
         <div className="text-center mt-6 text-gray-500 text-xs">
           <p>💡 Semakin tinggi round, foto semakin jelas!</p>
           <p>🏆 Jawab 10 pertanyaan dengan benar untuk menang</p>
+          <p>🎲 Setiap siswa hanya muncul sekali dalam 1 game</p>
         </div>
       </div>
     </section>
