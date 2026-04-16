@@ -13,6 +13,8 @@ interface Student {
   dream: string;
   quote: string;
   jurusan: string;
+  image_position_x?: number;
+  image_position_y?: number;
 }
 
 interface StudentCardProps {
@@ -33,19 +35,22 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
       className="group cursor-pointer"
     >
       <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 backdrop-blur-sm">
-        <div className="relative overflow-hidden h-64">
+        <div className="relative overflow-hidden h-64 bg-black/20">
           <img
             src={student.photo}
             alt={student.nickname}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            style={{
+              objectPosition: `${student.image_position_x || 50}% ${student.image_position_y || 50}%`
+            }}
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         </div>
 
         <div className="p-5">
-          <h3 className="text-xl font-bold text-white mb-1">{student.nickname}</h3>
-          <p className="text-gray-400 text-sm mb-3">{student.aka || student.nickname}</p>
+          <h3 className="text-xl font-bold text-white mb-1">{student.aka || student.nickname}</h3>
+          <p className="text-gray-400 text-sm mb-3">{student.name}</p>
           
           <div className="flex items-center gap-2 text-gray-400 text-sm">
             <User className="w-4 h-4" />

@@ -14,6 +14,8 @@ interface Student {
   dream: string;
   quote: string;
   jurusan: string;
+  image_position_x?: number;
+  image_position_y?: number;
 }
 
 const MiniGame = () => {
@@ -45,7 +47,7 @@ const MiniGame = () => {
       console.error('Error fetching students:', error);
     } else {
       setStudents(data || []);
-      setRemainingStudents([...(data || [])]); // Copy semua siswa
+      setRemainingStudents([...(data || [])]);
       if (data && data.length > 0) {
         newRound(data);
       }
@@ -66,17 +68,14 @@ const MiniGame = () => {
     
     setIsLoading(true);
     
-    // Ambil siswa berikutnya dari daftar yang belum dipakai
     let student;
     if (remainingStudents.length === 0) {
-      // Reset jika sudah habis
       setRemainingStudents(shuffleArray([...studentsData]));
       student = remainingStudents[0] || studentsData[0];
     } else {
       student = remainingStudents[0];
     }
     
-    // Hapus siswa yang sudah dipakai
     setRemainingStudents(prev => prev.slice(1));
     
     const otherNames = studentsData
@@ -212,7 +211,10 @@ const MiniGame = () => {
                       src={currentStudent.photo}
                       alt="Tebak siapa?"
                       className="w-48 h-48 rounded-full object-cover mx-auto shadow-2xl"
-                      style={{ filter: `blur(${Math.max(3, 10 - Math.floor(round / 2))}px)` }}
+                      style={{
+                        filter: `blur(${Math.max(3, 10 - Math.floor(round / 2))}px)`,
+                        objectPosition: `${currentStudent.image_position_x || 50}% ${currentStudent.image_position_y || 50}%`
+                      }}
                     />
                     <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/50 to-transparent" />
                   </motion.div>

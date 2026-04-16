@@ -5,6 +5,7 @@ import { motion, useInView } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { Calendar } from "lucide-react";
 
+
 interface TimelineEvent {
   id: number;
   year: string;

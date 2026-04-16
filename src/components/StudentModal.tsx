@@ -13,6 +13,8 @@ interface Student {
   dream: string;
   quote: string;
   jurusan: string;
+  image_position_x?: number;
+  image_position_y?: number;
 }
 
 interface StudentModalProps {
@@ -58,6 +60,9 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                     src={student.photo}
                     alt={student.name}
                     className="w-full h-64 md:h-full object-cover"
+                    style={{
+                      objectPosition: `${student.image_position_x || 50}% ${student.image_position_y || 50}%`
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent md:bg-gradient-to-r" />
                 </div>
@@ -68,11 +73,7 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                   >
-                    {/* Nama Lengkap */}
-                    <h2 className="text-3xl font-bold text-white mb-1">
-                      {student.name}
-                    </h2>
-                    {/* Tampilkan AKA dan Nickname */}
+                    <h2 className="text-3xl font-bold text-white mb-1">{student.name}</h2>
                     <p className="text-gray-400 mb-4">
                       {student.aka && <span className="text-white font-medium">{student.aka}</span>}
                       {student.aka && student.nickname && <span> • </span>}
@@ -80,7 +81,6 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                     </p>
                     
                     <div className="space-y-4">
-                      {/* Hobi */}
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
                           <Heart className="w-4 h-4 text-white" />
@@ -91,7 +91,6 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                         </div>
                       </div>
 
-                      {/* Cita-cita */}
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
                           <Target className="w-4 h-4 text-white" />
@@ -102,7 +101,6 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                         </div>
                       </div>
 
-                      {/* Quote */}
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
                           <Quote className="w-4 h-4 text-white" />

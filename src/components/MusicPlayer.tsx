@@ -38,7 +38,7 @@ const MusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.3);
   const [isMuted, setIsMuted] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isShuffle, setIsShuffle] = useState(false);
@@ -52,16 +52,24 @@ const MusicPlayer = () => {
   }, []);
 
   const fetchSongs = async () => {
-    const { data, error } = await supabase
-      .from('songs')
-      .select('*')
-      .order('id', { ascending: true });
-    
-    if (error) {
-      console.error('Error loading songs:', error);
-    } else if (data && data.length > 0) {
-      setSongs(data);
-      setCurrentSongIndex(0);
+    try {
+      const { data, error } = await supabase
+        .from("songs")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.error("Error loading songs:", error);
+        setSongs([]);
+      } else if (data && data.length > 0) {
+        setSongs(data);
+        setCurrentSongIndex(0);
+      } else {
+        setSongs([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch songs:", err);
+      setSongs([]);
     }
     setLoading(false);
   };
@@ -74,24 +82,19 @@ const MusicPlayer = () => {
     };
   }, []);
 
+  // Update volume
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
 
-  // Fungsi untuk memutar lagu (otomatis play)
-  const playSong = (index: number) => {
-    setCurrentSongIndex(index);
-    setIsPlaying(true);
-  };
-
-  // Auto play saat currentSongIndex berubah
+  // Reset waktu saat ganti lagu (TANPA auto play)
   useEffect(() => {
     if (songs.length > 0 && audioRef.current) {
-      audioRef.current.play().catch(e => console.log("Auto play error:", e));
-      setIsPlaying(true);
+      audioRef.current.currentTime = 0;
     }
+    setIsPlaying(false); // Set pause saat ganti lagu
   }, [currentSongIndex, songs]);
 
   // Auto play next song when current ends
@@ -104,14 +107,15 @@ const MusicPlayer = () => {
         // Repeat: putar ulang lagu yang sama
         audio.currentTime = 0;
         audio.play();
+        setIsPlaying(true);
       } else {
         // Next: panggil playNext
         playNext();
       }
     };
 
-    audio.addEventListener('ended', handleEnded);
-    return () => audio.removeEventListener('ended', handleEnded);
+    audio.addEventListener("ended", handleEnded);
+    return () => audio.removeEventListener("ended", handleEnded);
   }, [currentSongIndex, isRepeat, isShuffle, songs]);
 
   const playNext = () => {
@@ -127,13 +131,13 @@ const MusicPlayer = () => {
     } else {
       nextIndex = (currentSongIndex + 1) % songs.length;
     }
-    
-    playSong(nextIndex);
+
+    setCurrentSongIndex(nextIndex);
   };
 
   const playPrevious = () => {
     if (songs.length === 0) return;
-    
+
     let prevIndex;
     if (isShuffle) {
       let randomIndex;
@@ -144,13 +148,13 @@ const MusicPlayer = () => {
     } else {
       prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
     }
-    
-    playSong(prevIndex);
+
+    setCurrentSongIndex(prevIndex);
   };
 
   const togglePlay = () => {
     if (songs.length === 0) return;
-    
+
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
@@ -230,6 +234,21 @@ const MusicPlayer = () => {
         )}
       </AnimatePresence>
 
+      {/* Music Player Panel - animasi seperti floating menu */}
+      <AnimatePresence>
+        {!isMinimized && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, delay: 0.2 }}
+            className="fixed bottom-6 left-6 z-50 bg-black/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-4 w-80"
+          >
+            {/* ... konten music player ... */}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Music Player Panel */}
       <AnimatePresence>
         {!isMinimized && (
@@ -281,7 +300,7 @@ const MusicPlayer = () => {
             <div className="flex items-center justify-center gap-3 mb-3">
               <button
                 onClick={() => setIsShuffle(!isShuffle)}
-                className={`transition-colors ${isShuffle ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`transition-colors ${isShuffle ? "text-white" : "text-gray-400 hover:text-white"}`}
                 title={isShuffle ? "Shuffle ON" : "Shuffle OFF"}
               >
                 <Shuffle className="w-4 h-4" />
@@ -313,7 +332,7 @@ const MusicPlayer = () => {
               </button>
               <button
                 onClick={() => setIsRepeat(!isRepeat)}
-                className={`transition-colors ${isRepeat ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`transition-colors ${isRepeat ? "text-white" : "text-gray-400 hover:text-white"}`}
                 title={isRepeat ? "Repeat ON" : "Repeat OFF"}
               >
                 <Repeat className="w-4 h-4" />
@@ -347,7 +366,8 @@ const MusicPlayer = () => {
             {/* Playlist Info */}
             <div className="mt-2 pt-2 border-t border-white/10 text-center">
               <p className="text-gray-500 text-xs">
-                {songs.length} lagu • {isShuffle ? "Shuffle" : isRepeat ? "Repeat" : "▶ Normal"}
+                {songs.length} lagu •{" "}
+                {isShuffle ? "🔀 Shuffle" : isRepeat ? "🔁 Repeat" : "▶ Normal"}
               </p>
             </div>
           </motion.div>

@@ -10,12 +10,14 @@ interface Student {
   id: number;
   name: string;
   nickname: string;
-  aka: string,
+  aka: string;
   photo: string;
   hobby: string;
   dream: string;
   quote: string;
   jurusan: string;
+  image_position_x?: number;
+  image_position_y?: number;
 }
 
 const StudentList = () => {

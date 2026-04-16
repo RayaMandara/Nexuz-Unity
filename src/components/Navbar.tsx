@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
+
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
 

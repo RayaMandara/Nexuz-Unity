@@ -1,11 +1,23 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { 
-  Users, Image, Clock, LogOut, Plus, Edit, Trash2, X, Upload, 
-  Heart, RefreshCw, Music, Play
+import {
+  Users,
+  Image,
+  Clock,
+  LogOut,
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  Upload,
+  Heart,
+  RefreshCw,
+  Music,
+  Play,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import ImageCropModal from "@/components/ImageCropModal";
 
 // Tipe data
 interface Student {
@@ -18,6 +30,8 @@ interface Student {
   dream: string;
   quote: string;
   jurusan: string;
+  image_position_x: number;
+  image_position_y: number;
 }
 
 interface GalleryImage {
@@ -57,29 +71,27 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("siswa");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Data state
+
   const [students, setStudents] = useState<Student[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [songs, setSongs] = useState<Song[]>([]);
-  
-  // Modal state
+
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [modalType, setModalType] = useState<"add" | "edit">("add");
 
-  // Cek autentikasi
   useEffect(() => {
     const checkAuth = () => {
       const savedAuth = localStorage.getItem("nexuz_admin_auth");
       const savedTime = localStorage.getItem("nexuz_admin_login_time");
-      
-      const isValid = savedAuth === "true" && 
-                      savedTime && 
-                      (Date.now() - parseInt(savedTime) < 86400000);
-      
+
+      const isValid =
+        savedAuth === "true" &&
+        savedTime &&
+        Date.now() - parseInt(savedTime) < 86400000;
+
       if (isValid) {
         setIsAuthenticated(true);
         loadAllData();
@@ -90,7 +102,7 @@ export default function AdminPage() {
       }
       setIsLoading(false);
     };
-    
+
     checkAuth();
   }, []);
 
@@ -101,19 +113,19 @@ export default function AdminPage() {
       loadGallery(),
       loadTimeline(),
       loadMemories(),
-      loadSongs()
+      loadSongs(),
     ]);
     setIsRefreshing(false);
   };
 
   const loadStudents = async () => {
     const { data, error } = await supabase
-      .from('students')
-      .select('*')
-      .order('id', { ascending: true });
-    
+      .from("students")
+      .select("*")
+      .order("id", { ascending: true });
+
     if (error) {
-      console.error('Error loading students:', error);
+      console.error("Error loading students:", error);
     } else {
       setStudents(data || []);
     }
@@ -121,12 +133,12 @@ export default function AdminPage() {
 
   const loadGallery = async () => {
     const { data, error } = await supabase
-      .from('gallery')
-      .select('*')
-      .order('id', { ascending: true });
-    
+      .from("gallery")
+      .select("*")
+      .order("id", { ascending: true });
+
     if (error) {
-      console.error('Error loading gallery:', error);
+      console.error("Error loading gallery:", error);
     } else {
       setGallery(data || []);
     }
@@ -134,12 +146,12 @@ export default function AdminPage() {
 
   const loadTimeline = async () => {
     const { data, error } = await supabase
-      .from('timeline')
-      .select('*')
-      .order('id', { ascending: true });
-    
+      .from("timeline")
+      .select("*")
+      .order("id", { ascending: true });
+
     if (error) {
-      console.error('Error loading timeline:', error);
+      console.error("Error loading timeline:", error);
     } else {
       setTimeline(data || []);
     }
@@ -147,12 +159,12 @@ export default function AdminPage() {
 
   const loadMemories = async () => {
     const { data, error } = await supabase
-      .from('memories')
-      .select('*')
-      .order('id', { ascending: false });
-    
+      .from("memories")
+      .select("*")
+      .order("id", { ascending: false });
+
     if (error) {
-      console.error('Error loading memories:', error);
+      console.error("Error loading memories:", error);
     } else {
       setMemories(data || []);
     }
@@ -160,12 +172,12 @@ export default function AdminPage() {
 
   const loadSongs = async () => {
     const { data, error } = await supabase
-      .from('songs')
-      .select('*')
-      .order('id', { ascending: true });
-    
+      .from("songs")
+      .select("*")
+      .order("id", { ascending: true });
+
     if (error) {
-      console.error('Error loading songs:', error);
+      console.error("Error loading songs:", error);
     } else {
       setSongs(data || []);
     }
@@ -174,10 +186,10 @@ export default function AdminPage() {
   // CRUD Siswa
   const addStudent = async (student: Omit<Student, "id">) => {
     const newStudent = { ...student, id: Date.now(), jurusan: "RPL" };
-    const { error } = await supabase.from('students').insert([newStudent]);
-    
+    const { error } = await supabase.from("students").insert([newStudent]);
+
     if (error) {
-      alert('Gagal menambah siswa: ' + error.message);
+      alert("Gagal menambah siswa: " + error.message);
       return false;
     }
     await loadStudents();
@@ -186,12 +198,12 @@ export default function AdminPage() {
 
   const updateStudent = async (id: number, updatedData: Partial<Student>) => {
     const { error } = await supabase
-      .from('students')
+      .from("students")
       .update({ ...updatedData, jurusan: "RPL" })
-      .eq('id', id);
-    
+      .eq("id", id);
+
     if (error) {
-      alert('Gagal update siswa: ' + error.message);
+      alert("Gagal update siswa: " + error.message);
       return false;
     }
     await loadStudents();
@@ -200,9 +212,9 @@ export default function AdminPage() {
 
   const deleteStudent = async (id: number) => {
     if (!confirm("Yakin ingin menghapus siswa ini?")) return false;
-    const { error } = await supabase.from('students').delete().eq('id', id);
+    const { error } = await supabase.from("students").delete().eq("id", id);
     if (error) {
-      alert('Gagal hapus siswa: ' + error.message);
+      alert("Gagal hapus siswa: " + error.message);
       return false;
     }
     await loadStudents();
@@ -212,20 +224,26 @@ export default function AdminPage() {
   // CRUD Gallery
   const addGallery = async (item: Omit<GalleryImage, "id">) => {
     const newItem = { ...item, id: Date.now() };
-    const { error } = await supabase.from('gallery').insert([newItem]);
-    
+    const { error } = await supabase.from("gallery").insert([newItem]);
+
     if (error) {
-      alert('Gagal menambah foto: ' + error.message);
+      alert("Gagal menambah foto: " + error.message);
       return false;
     }
     await loadGallery();
     return true;
   };
 
-  const updateGallery = async (id: number, updatedData: Partial<GalleryImage>) => {
-    const { error } = await supabase.from('gallery').update(updatedData).eq('id', id);
+  const updateGallery = async (
+    id: number,
+    updatedData: Partial<GalleryImage>,
+  ) => {
+    const { error } = await supabase
+      .from("gallery")
+      .update(updatedData)
+      .eq("id", id);
     if (error) {
-      alert('Gagal update foto: ' + error.message);
+      alert("Gagal update foto: " + error.message);
       return false;
     }
     await loadGallery();
@@ -234,9 +252,9 @@ export default function AdminPage() {
 
   const deleteGallery = async (id: number) => {
     if (!confirm("Yakin ingin menghapus foto ini?")) return false;
-    const { error } = await supabase.from('gallery').delete().eq('id', id);
+    const { error } = await supabase.from("gallery").delete().eq("id", id);
     if (error) {
-      alert('Gagal hapus foto: ' + error.message);
+      alert("Gagal hapus foto: " + error.message);
       return false;
     }
     await loadGallery();
@@ -246,20 +264,26 @@ export default function AdminPage() {
   // CRUD Timeline
   const addTimeline = async (item: Omit<TimelineEvent, "id">) => {
     const newItem = { ...item, id: Date.now() };
-    const { error } = await supabase.from('timeline').insert([newItem]);
-    
+    const { error } = await supabase.from("timeline").insert([newItem]);
+
     if (error) {
-      alert('Gagal menambah event: ' + error.message);
+      alert("Gagal menambah event: " + error.message);
       return false;
     }
     await loadTimeline();
     return true;
   };
 
-  const updateTimeline = async (id: number, updatedData: Partial<TimelineEvent>) => {
-    const { error } = await supabase.from('timeline').update(updatedData).eq('id', id);
+  const updateTimeline = async (
+    id: number,
+    updatedData: Partial<TimelineEvent>,
+  ) => {
+    const { error } = await supabase
+      .from("timeline")
+      .update(updatedData)
+      .eq("id", id);
     if (error) {
-      alert('Gagal update event: ' + error.message);
+      alert("Gagal update event: " + error.message);
       return false;
     }
     await loadTimeline();
@@ -268,9 +292,9 @@ export default function AdminPage() {
 
   const deleteTimeline = async (id: number) => {
     if (!confirm("Yakin ingin menghapus event ini?")) return false;
-    const { error } = await supabase.from('timeline').delete().eq('id', id);
+    const { error } = await supabase.from("timeline").delete().eq("id", id);
     if (error) {
-      alert('Gagal hapus event: ' + error.message);
+      alert("Gagal hapus event: " + error.message);
       return false;
     }
     await loadTimeline();
@@ -280,9 +304,9 @@ export default function AdminPage() {
   // CRUD Memories
   const deleteMemory = async (id: number) => {
     if (!confirm("Yakin ingin menghapus pesan ini?")) return false;
-    const { error } = await supabase.from('memories').delete().eq('id', id);
+    const { error } = await supabase.from("memories").delete().eq("id", id);
     if (error) {
-      alert('Gagal hapus pesan: ' + error.message);
+      alert("Gagal hapus pesan: " + error.message);
       return false;
     }
     await loadMemories();
@@ -291,12 +315,11 @@ export default function AdminPage() {
 
   // CRUD Songs
   const addSong = async (song: Omit<Song, "id">) => {
-    // song.url sudah berisi base64 dari file MP3
     const newSong = { ...song, id: Date.now(), duration: 0 };
-    const { error } = await supabase.from('songs').insert([newSong]);
-    
+    const { error } = await supabase.from("songs").insert([newSong]);
+
     if (error) {
-      alert('Gagal menambah lagu: ' + error.message);
+      alert("Gagal menambah lagu: " + error.message);
       return false;
     }
     await loadSongs();
@@ -305,9 +328,9 @@ export default function AdminPage() {
 
   const deleteSong = async (id: number) => {
     if (!confirm("Yakin ingin menghapus lagu ini?")) return false;
-    const { error } = await supabase.from('songs').delete().eq('id', id);
+    const { error } = await supabase.from("songs").delete().eq("id", id);
     if (error) {
-      alert('Gagal hapus lagu: ' + error.message);
+      alert("Gagal hapus lagu: " + error.message);
       return false;
     }
     await loadSongs();
@@ -334,7 +357,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
       <div className="bg-white/5 border-b border-white/10 px-6 py-4 sticky top-0 z-10 backdrop-blur">
         <div className="container mx-auto flex justify-between items-center flex-wrap gap-4">
           <h1 className="text-xl font-bold text-white">Admin Panel Nexuz</h1>
@@ -344,7 +366,9 @@ export default function AdminPage() {
               disabled={isRefreshing}
               className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+              />
               Refresh
             </button>
             <button
@@ -359,12 +383,13 @@ export default function AdminPage() {
       </div>
 
       <div className="container mx-auto px-6 py-8">
-        {/* Tabs */}
         <div className="flex gap-2 mb-8 border-b border-white/10 pb-4 flex-wrap">
           <button
             onClick={() => setActiveTab("siswa")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              activeTab === "siswa" ? "bg-white text-black" : "text-gray-400 hover:text-white"
+              activeTab === "siswa"
+                ? "bg-white text-black"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             <Users className="w-4 h-4" />
@@ -373,7 +398,9 @@ export default function AdminPage() {
           <button
             onClick={() => setActiveTab("galeri")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              activeTab === "galeri" ? "bg-white text-black" : "text-gray-400 hover:text-white"
+              activeTab === "galeri"
+                ? "bg-white text-black"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             <Image className="w-4 h-4" />
@@ -382,7 +409,9 @@ export default function AdminPage() {
           <button
             onClick={() => setActiveTab("timeline")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              activeTab === "timeline" ? "bg-white text-black" : "text-gray-400 hover:text-white"
+              activeTab === "timeline"
+                ? "bg-white text-black"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             <Clock className="w-4 h-4" />
@@ -391,7 +420,9 @@ export default function AdminPage() {
           <button
             onClick={() => setActiveTab("kenangan")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              activeTab === "kenangan" ? "bg-white text-black" : "text-gray-400 hover:text-white"
+              activeTab === "kenangan"
+                ? "bg-white text-black"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             <Heart className="w-4 h-4" />
@@ -400,7 +431,9 @@ export default function AdminPage() {
           <button
             onClick={() => setActiveTab("musik")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-              activeTab === "musik" ? "bg-white text-black" : "text-gray-400 hover:text-white"
+              activeTab === "musik"
+                ? "bg-white text-black"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             <Music className="w-4 h-4" />
@@ -425,19 +458,36 @@ export default function AdminPage() {
                 Tambah Siswa
               </button>
             </div>
-            
+
             {students.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">Belum ada data siswa</div>
+              <div className="text-center py-12 text-gray-400">
+                Belum ada data siswa
+              </div>
             ) : (
               <div className="grid gap-3">
                 {students.map((student) => (
-                  <div key={student.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition">
+                  <div
+                    key={student.id}
+                    className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition"
+                  >
                     <div className="flex items-center gap-4">
-                      <img src={student.photo} alt={student.name} className="w-12 h-12 rounded-full object-cover" />
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-black/20">
+                        <img
+                          src={student.photo}
+                          alt={student.name}
+                          className="w-full h-full object-cover"
+                          style={{
+                            objectPosition: `${student.image_position_x || 50}% ${student.image_position_y || 50}%`,
+                          }}
+                        />
+                      </div>
                       <div>
-                        <h3 className="font-semibold text-white">{student.name}</h3>
+                        <h3 className="font-semibold text-white">
+                          {student.name}
+                        </h3>
                         <p className="text-gray-400 text-sm">
-                          {student.nickname} {student.aka ? `• ${student.aka}` : ''}
+                          {student.nickname}{" "}
+                          {student.aka ? `• ${student.aka}` : ""}
                         </p>
                       </div>
                     </div>
@@ -483,17 +533,28 @@ export default function AdminPage() {
                 Tambah Foto
               </button>
             </div>
-            
+
             {gallery.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">Belum ada foto galeri</div>
+              <div className="text-center py-12 text-gray-400">
+                Belum ada foto galeri
+              </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {gallery.map((item) => (
-                  <div key={item.id} className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col gap-3 hover:bg-white/10 transition">
-                    <img src={item.src} alt={item.title} className="w-full h-40 object-cover rounded-lg" />
+                  <div
+                    key={item.id}
+                    className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col gap-3 hover:bg-white/10 transition"
+                  >
+                    <img
+                      src={item.src}
+                      alt={item.title}
+                      className="w-full h-40 object-cover rounded-lg"
+                    />
                     <div className="flex justify-between items-center">
                       <div>
-                        <h3 className="font-semibold text-white">{item.title}</h3>
+                        <h3 className="font-semibold text-white">
+                          {item.title}
+                        </h3>
                         <p className="text-gray-400 text-sm">{item.date}</p>
                       </div>
                       <div className="flex gap-1">
@@ -526,7 +587,9 @@ export default function AdminPage() {
         {activeTab === "timeline" && (
           <div>
             <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-              <h2 className="text-xl font-bold text-white">Manajemen Timeline</h2>
+              <h2 className="text-xl font-bold text-white">
+                Manajemen Timeline
+              </h2>
               <button
                 onClick={() => {
                   setModalType("add");
@@ -539,20 +602,31 @@ export default function AdminPage() {
                 Tambah Event
               </button>
             </div>
-            
+
             {timeline.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">Belum ada event timeline</div>
+              <div className="text-center py-12 text-gray-400">
+                Belum ada event timeline
+              </div>
             ) : (
               <div className="grid gap-3">
                 {timeline.map((item) => (
-                  <div key={item.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition">
+                  <div
+                    key={item.id}
+                    className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition"
+                  >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">{item.icon}</span>
-                        <h3 className="font-semibold text-white">{item.title}</h3>
+                        <h3 className="font-semibold text-white">
+                          {item.title}
+                        </h3>
                       </div>
-                      <p className="text-gray-400 text-sm">{item.year} • {item.date}</p>
-                      <p className="text-gray-400 text-sm mt-1 line-clamp-2">{item.description}</p>
+                      <p className="text-gray-400 text-sm">
+                        {item.year} • {item.date}
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1 line-clamp-2">
+                        {item.description}
+                      </p>
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -583,23 +657,40 @@ export default function AdminPage() {
         {activeTab === "kenangan" && (
           <div>
             <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-              <h2 className="text-xl font-bold text-white">Manajemen Buku Kenangan</h2>
+              <h2 className="text-xl font-bold text-white">
+                Manajemen Buku Kenangan
+              </h2>
             </div>
-            
+
             {memories.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">Belum ada pesan kenangan</div>
+              <div className="text-center py-12 text-gray-400">
+                Belum ada pesan kenangan
+              </div>
             ) : (
               <div className="grid gap-3">
                 {memories.map((memory) => (
-                  <div key={memory.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition">
+                  <div
+                    key={memory.id}
+                    className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition"
+                  >
                     <div className="flex items-center gap-4 flex-1">
-                      <img src={memory.avatar} alt={memory.name} className="w-10 h-10 rounded-full object-cover" />
+                      <img
+                        src={memory.avatar}
+                        alt={memory.name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-white">{memory.name}</h3>
-                          <span className="text-gray-500 text-xs">{memory.date}</span>
+                          <h3 className="font-semibold text-white">
+                            {memory.name}
+                          </h3>
+                          <span className="text-gray-500 text-xs">
+                            {memory.date}
+                          </span>
                         </div>
-                        <p className="text-gray-300 text-sm mt-1">{memory.message}</p>
+                        <p className="text-gray-300 text-sm mt-1">
+                          {memory.message}
+                        </p>
                       </div>
                     </div>
                     <button
@@ -632,24 +723,33 @@ export default function AdminPage() {
                 Tambah Lagu
               </button>
             </div>
-            
+
             {songs.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <Music className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>Belum ada lagu. Tambah lagu pertama kamu!</p>
-                <p className="text-xs mt-2 text-gray-500">Upload file MP3 (max 5MB)</p>
+                <p className="text-xs mt-2 text-gray-500">
+                  Upload file MP3 (max 5MB)
+                </p>
               </div>
             ) : (
               <div className="grid gap-3">
                 {songs.map((song) => (
-                  <div key={song.id} className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition">
+                  <div
+                    key={song.id}
+                    className="bg-white/5 rounded-xl p-4 border border-white/10 flex justify-between items-center flex-wrap gap-4 hover:bg-white/10 transition"
+                  >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
                         <Play className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white truncate">{song.title}</h3>
-                        <p className="text-gray-400 text-sm truncate">{song.artist}</p>
+                        <h3 className="font-semibold text-white truncate">
+                          {song.title}
+                        </h3>
+                        <p className="text-gray-400 text-sm truncate">
+                          {song.artist}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -715,16 +815,24 @@ export default function AdminPage() {
 
 // Modal Form Component
 function ModalForm({ type, data, tab, onClose, onSave }: any) {
-  const [formData, setFormData] = useState(data || {});
+  const [formData, setFormData] = useState(
+    data || {
+      image_position_x: 50,
+      image_position_y: 50,
+    },
+  );
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
+  const handleFileUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldName: string,
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Untuk MP3, konversi ke base64
     if (fieldName === "url") {
       if (file.type !== "audio/mpeg") {
         alert("File harus berformat MP3!");
@@ -744,12 +852,16 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
       return;
     }
 
-    // Untuk gambar, konversi ke base64
-    if (file.type.startsWith('image/')) {
+    if (file.type.startsWith("image/")) {
       setUploading(true);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, [fieldName]: reader.result });
+        setFormData({
+          ...formData,
+          [fieldName]: reader.result,
+          image_position_x: 50,
+          image_position_y: 50,
+        });
         setUploading(false);
       };
       reader.readAsDataURL(file);
@@ -769,28 +881,72 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
     siswa: [
       { name: "name", label: "Nama Lengkap", type: "text", required: true },
       { name: "nickname", label: "Panggilan", type: "text", required: true },
-      { name: "aka", label: "AKA (As Known As)", type: "text", required: false, placeholder: "Contoh: Si Cerdas, The Master" },
-      { name: "photo", label: "Foto Profil", type: "file", required: type === "add" },
+      {
+        name: "aka",
+        label: "AKA (As Known As)",
+        type: "text",
+        required: false,
+        placeholder: "Contoh: Si Cerdas, The Master",
+      },
+      {
+        name: "photo",
+        label: "Foto Profil",
+        type: "file",
+        required: type === "add",
+      },
       { name: "hobby", label: "Hobi", type: "text", required: true },
       { name: "dream", label: "Cita-cita", type: "text", required: true },
-      { name: "quote", label: "Quote Pribadi", type: "textarea", required: true },
+      {
+        name: "quote",
+        label: "Quote Pribadi",
+        type: "textarea",
+        required: true,
+      },
     ],
     galeri: [
-      { name: "src", label: "Foto Galeri", type: "file", required: type === "add" },
+      {
+        name: "src",
+        label: "Foto Galeri",
+        type: "file",
+        required: type === "add",
+      },
       { name: "title", label: "Judul", type: "text", required: true },
       { name: "date", label: "Tanggal", type: "text", required: true },
     ],
     timeline: [
       { name: "year", label: "Tahun", type: "text", required: true },
       { name: "title", label: "Judul Event", type: "text", required: true },
-      { name: "description", label: "Deskripsi", type: "textarea", required: true },
+      {
+        name: "description",
+        label: "Deskripsi",
+        type: "textarea",
+        required: true,
+      },
       { name: "icon", label: "Icon (emoji)", type: "text", required: true },
       { name: "date", label: "Tanggal", type: "text", required: true },
     ],
     musik: [
-      { name: "title", label: "Judul Lagu", type: "text", required: true, placeholder: "Contoh: Class Anthem" },
-      { name: "artist", label: "Artis / Penyanyi", type: "text", required: true, placeholder: "Contoh: Nexuz Class" },
-      { name: "url", label: "File MP3", type: "file", required: true, accept: "audio/mpeg" },
+      {
+        name: "title",
+        label: "Judul Lagu",
+        type: "text",
+        required: true,
+        placeholder: "Contoh: Class Anthem",
+      },
+      {
+        name: "artist",
+        label: "Artis / Penyanyi",
+        type: "text",
+        required: true,
+        placeholder: "Contoh: Nexuz Class",
+      },
+      {
+        name: "url",
+        label: "File MP3",
+        type: "file",
+        required: true,
+        accept: "audio/mpeg",
+      },
     ],
   };
 
@@ -803,7 +959,14 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
       <div className="bg-black rounded-2xl border border-white/20 max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4 sticky top-0 bg-black">
           <h3 className="text-xl font-bold text-white">
-            {type === "add" ? "Tambah" : "Edit"} {tab === "siswa" ? "Siswa" : tab === "galeri" ? "Galeri" : tab === "timeline" ? "Timeline" : "Musik"}
+            {type === "add" ? "Tambah" : "Edit"}{" "}
+            {tab === "siswa"
+              ? "Siswa"
+              : tab === "galeri"
+                ? "Galeri"
+                : tab === "timeline"
+                  ? "Timeline"
+                  : "Musik"}
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
             <X className="w-5 h-5" />
@@ -813,8 +976,10 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {currentFields.map((field: any) => (
             <div key={field.name}>
-              <label className="block text-gray-400 text-sm mb-1">{field.label}</label>
-              
+              <label className="block text-gray-400 text-sm mb-1">
+                {field.label}
+              </label>
+
               {field.type === "file" ? (
                 <div>
                   <input
@@ -830,23 +995,57 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                     className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-3 text-white hover:bg-white/20 transition flex items-center justify-center gap-2"
                   >
                     <Upload className="w-4 h-4" />
-                    {uploading ? "Uploading..." : (formData[field.name] ? "Ganti File" : "Pilih File")}
+                    {uploading
+                      ? "Uploading..."
+                      : formData[field.name]
+                        ? "Ganti File"
+                        : "Pilih File"}
                   </button>
-                  {formData[field.name] && !uploading && field.name === "url" && (
-                    <div className="mt-2 text-gray-400 text-sm">
-                      ✅ File siap diupload
-                    </div>
-                  )}
-                  {formData[field.name] && !uploading && field.name !== "url" && (
-                    <div className="mt-2">
-                      <img src={formData[field.name]} alt="Preview" className="w-20 h-20 object-cover rounded-lg" />
-                    </div>
-                  )}
+
+                  {/* Preview foto profil dengan klik untuk crop */}
+                  {formData[field.name] &&
+                    !uploading &&
+                    field.name === "photo" && (
+                      <div
+                        className="mt-3 p-3 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition"
+                        onClick={() => setShowCropModal(true)}
+                      >
+                        <div className="flex items-center gap-4 flex-wrap">
+                          <div className="w-16 h-16 rounded-full overflow-hidden bg-black/20 border border-white/20">
+                            <img
+                              src={formData[field.name]}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                              style={{
+                                objectPosition: `${formData.image_position_x ?? 50}% ${formData.image_position_y ?? 50}%`,
+                              }}
+                            />
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            <p>X: {formData.image_position_x ?? 50}%</p>
+                            <p>Y: {formData.image_position_y ?? 50}%</p>
+                            <p className="text-blue-400 mt-1">
+                              ✏️ Klik untuk atur posisi
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                  {formData[field.name] &&
+                    !uploading &&
+                    field.name === "url" && (
+                      <div className="mt-2 text-gray-400 text-sm">
+                        ✅ File siap diupload
+                      </div>
+                    )}
                 </div>
               ) : field.type === "textarea" ? (
                 <textarea
                   value={formData[field.name] || ""}
-                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [field.name]: e.target.value })
+                  }
                   className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-white/50"
                   rows={3}
                   required={field.required}
@@ -856,7 +1055,9 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                 <input
                   type={field.type}
                   value={formData[field.name] || ""}
-                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [field.name]: e.target.value })
+                  }
                   className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-white/50"
                   required={field.required}
                   placeholder={field.placeholder}
@@ -882,6 +1083,25 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
             </button>
           </div>
         </form>
+
+        {/* Image Crop Modal */}
+        {formData.photo && (
+          <ImageCropModal
+            isOpen={showCropModal}
+            imageSrc={formData.photo}
+            initialX={Math.round(formData.image_position_x ?? 50)}
+            initialY={Math.round(formData.image_position_y ?? 50)}
+            onClose={() => setShowCropModal(false)}
+            onSave={(x, y) => {
+              setFormData({
+                ...formData,
+                image_position_x: Math.round(x),
+                image_position_y: Math.round(y),
+              });
+              setShowCropModal(false);
+            }}
+          />
+        )}
       </div>
     </div>
   );
