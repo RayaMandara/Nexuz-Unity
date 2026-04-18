@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { Users, Calendar, BookOpen, Heart, MapPin, Clock } from "lucide-react";
+import { Users, Calendar, Heart, MapPin, Clock, CalendarDays } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const CountUp = ({ end, duration = 2, suffix = "" }: { end: number; duration?: number; suffix?: string }) => {
@@ -37,12 +37,21 @@ const CountUp = ({ end, duration = 2, suffix = "" }: { end: number; duration?: n
 
 const ClassProfile = () => {
   const [studentCount, setStudentCount] = useState(0);
+  const [daysTogether, setDaysTogether] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // Hitung hari bersama dari 19 Juli 2024
+  useEffect(() => {
+    const startDate = new Date(2024, 6, 19); // 19 Juli 2024 (bulan dimulai dari 0)
+    const today = new Date();
+    const diffTime = today.getTime() - startDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    setDaysTogether(diffDays > 0 ? diffDays : 0);
+  }, []);
 
   useEffect(() => {
     fetchStudentCount();
 
-    // Subscribe ke perubahan data siswa (realtime)
     const subscription = supabase
       .channel('students-channel')
       .on('postgres_changes', 
@@ -57,7 +66,7 @@ const ClassProfile = () => {
   }, []);
 
   const fetchStudentCount = async () => {
-    const { data, error, count } = await supabase
+    const { count, error } = await supabase
       .from('students')
       .select('*', { count: 'exact', head: true });
     
@@ -70,9 +79,9 @@ const ClassProfile = () => {
   };
 
   const stats = [
-    { icon: Users, value: studentCount, label: "Siswa", suffix: "" },
+    { icon: Users, value: studentCount, label: "Siswa/Siswi", suffix: "" },
     { icon: Calendar, value: 2024, label: "Angkatan", suffix: "" },
-    { icon: BookOpen, value: 12, label: "Mata Pelajaran", suffix: "+" },
+    { icon: CalendarDays, value: daysTogether, label: "Hari Bersama", suffix: "" },
     { icon: Heart, value: null, label: "Kenangan", suffix: "∞" },
   ];
 
@@ -122,6 +131,7 @@ const ClassProfile = () => {
           <h3 className="text-2xl font-semibold mb-4">Tentang Kelas Nexuz</h3>
           <p className="text-gray-300 leading-relaxed">
             Kelas Nexuz adalah kelas yang terdiri dari <span className="text-white font-semibold">{studentCount}</span> siswa-siswi berbakat dengan semangat belajar tinggi. 
+            Kami telah bersama selama <span className="text-white font-semibold">{daysTogether}</span> hari penuh kenangan.
             Kami memiliki visi menciptakan generasi yang tidak hanya cerdas secara akademik, tetapi juga memiliki 
             karakter kuat dan jiwa kepemimpinan. Dengan didukung oleh guru-guru profesional dan fasilitas modern, 
             kami terus berinovasi dan berprestasi di berbagai bidang.

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { User } from "lucide-react";
+import { User, Crown, Star, FileText, Calculator, GraduationCap } from "lucide-react";
 
 interface Student {
   id: number;
@@ -13,6 +13,8 @@ interface Student {
   dream: string;
   quote: string;
   jurusan: string;
+  is_teacher?: boolean;
+  role?: string;
   image_position_x?: number;
   image_position_y?: number;
 }
@@ -23,7 +25,33 @@ interface StudentCardProps {
   index: number;
 }
 
+// Fungsi untuk mendapatkan badge berdasarkan role
+const getRoleBadge = (role?: string, isTeacher?: boolean) => {
+  // Wali Kelas
+  if (isTeacher) {
+    return { label: "Wali Kelas", color: "bg-purple-600", icon: GraduationCap };
+  }
+  
+  // Jabatan siswa
+  switch (role) {
+    case "ketua":
+      return { label: "Ketua Kelas", color: "bg-amber-600", icon: Crown };
+    case "wakil":
+      return { label: "Wakil Ketua", color: "bg-sky-600", icon: Star };
+    case "sekretaris1":
+    case "sekretaris2":
+      return { label: "Sekretaris", color: "bg-emerald-600", icon: FileText };
+    case "bendahara1":
+    case "bendahara2":
+      return { label: "Bendahara", color: "bg-blue-600", icon: Calculator };
+    default:
+      return null;
+  }
+};
+
 const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
+  const roleBadge = getRoleBadge(student.role, student.is_teacher);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -49,8 +77,23 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
         </div>
 
         <div className="p-5">
-          <h3 className="text-xl font-bold text-white mb-1">{student.aka || student.nickname}</h3>
-          <p className="text-gray-400 text-sm mb-3">{student.name}</p>
+          {/* Nama dan Badge dalam satu baris (flex) */}
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <h3 className="text-xl font-bold text-white truncate">{student.aka || student.nickname}</h3>
+            
+            {/* Badge */}
+            {roleBadge && (
+              <span className={`${roleBadge.color} px-2 py-0.5 rounded-full text-xs font-semibold text-white inline-flex items-center gap-1 flex-shrink-0`}>
+                <roleBadge.icon className="w-3 h-3" />
+                {roleBadge.label}
+              </span>
+            )}
+          </div>
+          
+          {/* Nama lengkap */}
+          <p className="text-gray-400 text-sm mb-3 truncate" title={student.name}>
+            {student.name}
+          </p>
           
           <div className="flex items-center gap-2 text-gray-400 text-sm">
             <User className="w-4 h-4" />

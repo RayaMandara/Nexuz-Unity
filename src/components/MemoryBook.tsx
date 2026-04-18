@@ -118,7 +118,7 @@ const MemoryBook = () => {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Contoh: Ahmad, Budi, Citra"
+                    placeholder="Contoh: Budi, Purnama, Mulia"
                     className="w-full bg-white/10 border border-white/20 rounded-lg py-2 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-white/50 transition-colors"
                     required
                   />

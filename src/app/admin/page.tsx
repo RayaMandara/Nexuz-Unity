@@ -32,6 +32,8 @@ interface Student {
   jurusan: string;
   image_position_x: number;
   image_position_y: number;
+  is_teacher?: boolean;
+  role?: string;
 }
 
 interface GalleryImage {
@@ -183,8 +185,71 @@ export default function AdminPage() {
     }
   };
 
+  // Validasi role sebelum tambah/edit
+  const validateRole = async (formData: any, isEdit: boolean, currentId?: number) => {
+    // Ambil semua data siswa dari database
+    const { data: allStudents } = await supabase
+      .from('students')
+      .select('id, role, is_teacher');
+    
+    // Cek Wali Kelas (hanya boleh 1)
+    if (formData.is_teacher) {
+      const existingTeacher = allStudents?.find(s => s.is_teacher === true && s.id !== currentId);
+      if (existingTeacher) {
+        alert('❌ Wali Kelas sudah ada! Hanya boleh 1 Wali Kelas.');
+        return false;
+      }
+    }
+    
+    // Cek Ketua Kelas (hanya boleh 1)
+    if (formData.role === 'ketua') {
+      const existingKetua = allStudents?.find(s => s.role === 'ketua' && s.id !== currentId);
+      if (existingKetua) {
+        alert('❌ Ketua Kelas sudah ada! Hanya boleh 1 Ketua Kelas.');
+        return false;
+      }
+    }
+    
+    // Cek Wakil Ketua (hanya boleh 1)
+    if (formData.role === 'wakil') {
+      const existingWakil = allStudents?.find(s => s.role === 'wakil' && s.id !== currentId);
+      if (existingWakil) {
+        alert('❌ Wakil Ketua sudah ada! Hanya boleh 1 Wakil Ketua.');
+        return false;
+      }
+    }
+    
+    // Cek Sekretaris (maksimal 2)
+    if (formData.role === 'sekretaris1' || formData.role === 'sekretaris2') {
+      const existingSekretaris = allStudents?.filter(s => 
+        (s.role === 'sekretaris1' || s.role === 'sekretaris2') && s.id !== currentId
+      ).length || 0;
+      if (existingSekretaris >= 2) {
+        alert('❌ Sekretaris sudah mencapai 2 orang! Tidak bisa tambah lagi.');
+        return false;
+      }
+    }
+    
+    // Cek Bendahara (maksimal 2)
+    if (formData.role === 'bendahara1' || formData.role === 'bendahara2') {
+      const existingBendahara = allStudents?.filter(s => 
+        (s.role === 'bendahara1' || s.role === 'bendahara2') && s.id !== currentId
+      ).length || 0;
+      if (existingBendahara >= 2) {
+        alert('❌ Bendahara sudah mencapai 2 orang! Tidak bisa tambah lagi.');
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
   // CRUD Siswa
   const addStudent = async (student: Omit<Student, "id">) => {
+    // Validasi sebelum tambah
+    const isValid = await validateRole(student, false);
+    if (!isValid) return false;
+    
     const newStudent = { ...student, id: Date.now(), jurusan: "RPL" };
     const { error } = await supabase.from("students").insert([newStudent]);
 
@@ -197,6 +262,10 @@ export default function AdminPage() {
   };
 
   const updateStudent = async (id: number, updatedData: Partial<Student>) => {
+    // Validasi sebelum update
+    const isValid = await validateRole(updatedData, true, id);
+    if (!isValid) return false;
+    
     const { error } = await supabase
       .from("students")
       .update({ ...updatedData, jurusan: "RPL" })
@@ -315,43 +384,11 @@ export default function AdminPage() {
 
   // CRUD Songs
   const addSong = async (song: Omit<Song, "id">) => {
-    // song.url berisi base64 dari file MP3
-    const base64Data = song.url.split(",")[1];
-    const byteCharacters = atob(base64Data);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const file = new File([byteArray], `${Date.now()}.mp3`, {
-      type: "audio/mpeg",
-    });
-
-    const { data, error } = await supabase.storage
-      .from("music")
-      .upload(`songs/${Date.now()}.mp3`, file);
+    const newSong = { ...song, id: Date.now(), duration: 0 };
+    const { error } = await supabase.from("songs").insert([newSong]);
 
     if (error) {
-      alert("Gagal upload file: " + error.message);
-      return false;
-    }
-
-    const { data: urlData } = supabase.storage
-      .from("music")
-      .getPublicUrl(data.path);
-
-    const newSong = {
-      title: song.title,
-      artist: song.artist,
-      url: urlData.publicUrl,
-      id: Date.now(),
-      duration: 0,
-    };
-
-    const { error: dbError } = await supabase.from("songs").insert([newSong]);
-
-    if (dbError) {
-      alert("Gagal menambah lagu: " + dbError.message);
+      alert("Gagal menambah lagu: " + error.message);
       return false;
     }
     await loadSongs();
@@ -360,17 +397,6 @@ export default function AdminPage() {
 
   const deleteSong = async (id: number) => {
     if (!confirm("Yakin ingin menghapus lagu ini?")) return false;
-
-    // Cari lagu yang akan dihapus
-    const songToDelete = songs.find((s) => s.id === id);
-
-    // Jika lagu menggunakan storage, hapus file dari storage juga
-    if (songToDelete?.url && songToDelete.url.includes("supabase.co")) {
-      const urlParts = songToDelete.url.split("/");
-      const fileName = urlParts[urlParts.length - 1];
-      await supabase.storage.from("music").remove([`songs/${fileName}`]);
-    }
-
     const { error } = await supabase.from("songs").delete().eq("id", id);
     if (error) {
       alert("Gagal hapus lagu: " + error.message);
@@ -528,6 +554,19 @@ export default function AdminPage() {
                         <p className="text-gray-400 text-sm">
                           {student.nickname}{" "}
                           {student.aka ? `• ${student.aka}` : ""}
+                          {student.is_teacher && (
+                            <span className="ml-2 text-xs bg-yellow-500/30 text-yellow-400 px-2 py-0.5 rounded-full">
+                              Wali Kelas
+                            </span>
+                          )}
+                          {!student.is_teacher && student.role && student.role !== "siswa" && (
+                            <span className="ml-2 text-xs bg-blue-500/30 text-blue-400 px-2 py-0.5 rounded-full">
+                              {student.role === "ketua" && "Ketua Kelas"}
+                              {student.role === "wakil" && "Wakil Ketua"}
+                              {(student.role === "sekretaris1" || student.role === "sekretaris2") && "Sekretaris"}
+                              {(student.role === "bendahara1" || student.role === "bendahara2") && "Bendahara"}
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -869,7 +908,6 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Untuk MP3
     if (fieldName === "url") {
       if (file.type !== "audio/mpeg") {
         alert("File harus berformat MP3!");
@@ -889,17 +927,14 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
       return;
     }
 
-    // Untuk foto siswa (photo) dan foto galeri (src)
     if (file.type.startsWith("image/")) {
       setUploading(true);
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Untuk foto siswa, buka modal crop
         if (fieldName === "photo") {
           setTempImageSrc(reader.result as string);
           setShowCropModal(true);
         } else {
-          // Untuk galeri, langsung simpan (tanpa crop)
           setFormData({ ...formData, [fieldName]: reader.result });
         }
         setUploading(false);
@@ -933,6 +968,27 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
         label: "Foto Profil",
         type: "file",
         required: type === "add",
+      },
+      {
+        name: "is_teacher",
+        label: "Wali Kelas",
+        type: "checkbox",
+        default: false,
+      },
+      {
+        name: "role",
+        label: "Jabatan",
+        type: "select",
+        options: [
+          { value: "siswa", label: "Siswa" },
+          { value: "ketua", label: "Ketua Kelas" },
+          { value: "wakil", label: "Wakil Ketua" },
+          { value: "sekretaris1", label: "Sekretaris 1" },
+          { value: "sekretaris2", label: "Sekretaris 2" },
+          { value: "bendahara1", label: "Bendahara 1" },
+          { value: "bendahara2", label: "Bendahara 2" },
+        ],
+        default: "siswa",
       },
       { name: "hobby", label: "Hobi", type: "text", required: true },
       { name: "dream", label: "Cita-cita", type: "text", required: true },
@@ -1042,7 +1098,6 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                       : "Pilih File"}
                   </button>
 
-                  {/* Preview foto galeri */}
                   {formData[field.name] &&
                     !uploading &&
                     field.name === "src" && (
@@ -1055,7 +1110,6 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                       </div>
                     )}
 
-                  {/* Preview foto siswa (sebelum crop) */}
                   {formData[field.name] &&
                     !uploading &&
                     field.name === "photo" && (
@@ -1086,6 +1140,33 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                       </div>
                     )}
                 </div>
+              ) : field.type === "checkbox" ? (
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={formData[field.name] || false}
+                    onChange={(e) =>
+                      setFormData({ ...formData, [field.name]: e.target.checked })
+                    }
+                    className="w-4 h-4 rounded border-white/20 bg-white/10 text-white focus:ring-white/50"
+                  />
+                  <span className="text-white text-sm">{field.label}</span>
+                </div>
+              ) : field.type === "select" ? (
+                <select
+                  value={formData[field.name] || field.default || "siswa"}
+                  onChange={(e) =>
+                    setFormData({ ...formData, [field.name]: e.target.value })
+                  }
+                  className="w-full bg-black/60 border border-white/20 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-white/50 appearance-none cursor-pointer"
+                  style={{ colorScheme: 'dark' }}
+                >
+                  {field.options.map((opt: any) => (
+                    <option key={opt.value} value={opt.value} className="bg-black text-white py-1">
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
               ) : field.type === "textarea" ? (
                 <textarea
                   value={formData[field.name] || ""}
@@ -1130,7 +1211,6 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
           </div>
         </form>
 
-        {/* Image Cropper Modal */}
         <ImageCropper
           isOpen={showCropModal}
           imageSrc={tempImageSrc}

@@ -96,7 +96,7 @@ const MiniGame = () => {
     if (selectedName === currentStudent.nickname) {
       const newScore = score + 10;
       setScore(newScore);
-      setMessage("✅ Benar! +10 poin");
+      setMessage("Benar! +10 poin");
       setMessageType("success");
       
       if (newScore > highScore) {
@@ -115,7 +115,7 @@ const MiniGame = () => {
         }
       }, 1000);
     } else {
-      setMessage(`❌ Salah! Itu adalah ${currentStudent.nickname}`);
+      setMessage(`Salah! Itu adalah ${currentStudent.nickname}`);
       setMessageType("error");
       setGameOver(true);
     }
