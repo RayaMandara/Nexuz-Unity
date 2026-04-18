@@ -52,27 +52,30 @@ const MusicPlayer = () => {
   }, []);
 
   const fetchSongs = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("songs")
-        .select("*")
-        .order("id", { ascending: true });
+  try {
+    console.log("Fetching songs from Supabase...");
+    const { data, error } = await supabase
+      .from("songs")
+      .select("*")
+      .order("id", { ascending: true });
 
-      if (error) {
-        console.error("Error loading songs:", error);
-        setSongs([]);
-      } else if (data && data.length > 0) {
-        setSongs(data);
-        setCurrentSongIndex(0);
-      } else {
-        setSongs([]);
-      }
-    } catch (err) {
-      console.error("Failed to fetch songs:", err);
+    if (error) {
+      console.error("Error details:", error);
+      setSongs([]);
+    } else if (data && data.length > 0) {
+      console.log("Songs loaded:", data.length);
+      setSongs(data);
+      setCurrentSongIndex(0);
+    } else {
+      console.log("No songs found");
       setSongs([]);
     }
-    setLoading(false);
-  };
+  } catch (err) {
+    console.error("Fetch error:", err);
+    setSongs([]);
+  }
+  setLoading(false);
+};
 
   // Register global expand function
   useEffect(() => {
@@ -89,12 +92,11 @@ const MusicPlayer = () => {
     }
   }, [volume]);
 
-  // Reset waktu saat ganti lagu (TANPA auto play)
+  // Reset waktu saat ganti lagu
   useEffect(() => {
     if (songs.length > 0 && audioRef.current) {
       audioRef.current.currentTime = 0;
     }
-    setIsPlaying(false); // Set pause saat ganti lagu
   }, [currentSongIndex, songs]);
 
   // Auto play next song when current ends
@@ -104,12 +106,10 @@ const MusicPlayer = () => {
 
     const handleEnded = () => {
       if (isRepeat) {
-        // Repeat: putar ulang lagu yang sama
         audio.currentTime = 0;
         audio.play();
         setIsPlaying(true);
       } else {
-        // Next: panggil playNext
         playNext();
       }
     };
@@ -133,6 +133,14 @@ const MusicPlayer = () => {
     }
 
     setCurrentSongIndex(nextIndex);
+    
+    // Auto play setelah ganti lagu
+    setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.play().catch(e => console.log("Auto play error:", e));
+        setIsPlaying(true);
+      }
+    }, 50);
   };
 
   const playPrevious = () => {
@@ -144,12 +152,20 @@ const MusicPlayer = () => {
       do {
         randomIndex = Math.floor(Math.random() * songs.length);
       } while (randomIndex === currentSongIndex && songs.length > 1);
-      prevIndex = randomIndex;
-    } else {
-      prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
-    }
+        prevIndex = randomIndex;
+      } else {
+        prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+      }
 
     setCurrentSongIndex(prevIndex);
+    
+    // Auto play setelah ganti lagu
+    setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.play().catch(e => console.log("Auto play error:", e));
+        setIsPlaying(true);
+      }
+    }, 50);
   };
 
   const togglePlay = () => {
@@ -231,21 +247,6 @@ const MusicPlayer = () => {
           >
             <Music className="w-5 h-5 text-white group-hover:text-black transition-colors" />
           </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* Music Player Panel - animasi seperti floating menu */}
-      <AnimatePresence>
-        {!isMinimized && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, delay: 0.2 }}
-            className="fixed bottom-6 left-6 z-50 bg-black/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-4 w-80"
-          >
-            {/* ... konten music player ... */}
-          </motion.div>
         )}
       </AnimatePresence>
 
@@ -367,7 +368,7 @@ const MusicPlayer = () => {
             <div className="mt-2 pt-2 border-t border-white/10 text-center">
               <p className="text-gray-500 text-xs">
                 {songs.length} lagu •{" "}
-                {isShuffle ? "🔀 Shuffle" : isRepeat ? "🔁 Repeat" : "▶ Normal"}
+                {isShuffle ? "Shuffle" : isRepeat ? "Repeat" : "▶ Normal"}
               </p>
             </div>
           </motion.div>

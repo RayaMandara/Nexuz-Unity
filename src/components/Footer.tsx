@@ -19,7 +19,7 @@ const Footer = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           className="mb-8"
         >
           <p className="text-gray-300 italic text-lg md:text-xl">
@@ -34,7 +34,7 @@ const Footer = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           href={igUrl}
           target="_blank"
           rel="noopener noreferrer"
@@ -48,7 +48,7 @@ const Footer = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           className="mb-8"
         >
           <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
@@ -62,7 +62,7 @@ const Footer = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           className="text-gray-500 text-xs space-y-1"
         >
           <p>© 2024 - 2027 • Nexuz Unity • SMK Pariwisata Triatma Jaya Badung</p>
@@ -73,7 +73,7 @@ const Footer = () => {
           initial={{ opacity: 0, scale: 0 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.4 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           onClick={scrollToTop}
           className="fixed bottom-6 right-6 z-40 w-10 h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 group"
           aria-label="Kembali ke atas"

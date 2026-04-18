@@ -383,28 +383,79 @@ export default function AdminPage() {
   };
 
   // CRUD Songs
-  const addSong = async (song: Omit<Song, "id">) => {
-    const newSong = { ...song, id: Date.now(), duration: 0 };
-    const { error } = await supabase.from("songs").insert([newSong]);
-
-    if (error) {
-      alert("Gagal menambah lagu: " + error.message);
+const addSong = async (song: Omit<Song, "id">) => {
+  try {
+    // Konversi base64 ke File
+    const base64Data = song.url.split(',')[1];
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const file = new File([byteArray], `${Date.now()}.mp3`, { type: 'audio/mpeg' });
+    
+    // Upload ke Supabase Storage (bucket 'music')
+    const fileName = `songs/${Date.now()}.mp3`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('music')
+      .upload(fileName, file);
+    
+    if (uploadError) {
+      alert('Gagal upload file ke storage: ' + uploadError.message);
+      return false;
+    }
+    
+    // Dapatkan public URL
+    const { data: urlData } = supabase.storage
+      .from('music')
+      .getPublicUrl(fileName);
+    
+    // Simpan URL ke database (BUKAN base64)
+    const newSong = {
+      title: song.title,
+      artist: song.artist,
+      url: urlData.publicUrl,
+      id: Date.now(),
+      duration: 0,
+    };
+    
+    const { error: dbError } = await supabase.from('songs').insert([newSong]);
+    
+    if (dbError) {
+      alert('Gagal menambah lagu ke database: ' + dbError.message);
       return false;
     }
     await loadSongs();
     return true;
-  };
+  } catch (err) {
+    console.error('Error adding song:', err);
+    alert('Terjadi kesalahan saat menambah lagu');
+    return false;
+  }
+};
 
-  const deleteSong = async (id: number) => {
-    if (!confirm("Yakin ingin menghapus lagu ini?")) return false;
-    const { error } = await supabase.from("songs").delete().eq("id", id);
-    if (error) {
-      alert("Gagal hapus lagu: " + error.message);
-      return false;
-    }
-    await loadSongs();
-    return true;
-  };
+const deleteSong = async (id: number) => {
+  if (!confirm("Yakin ingin menghapus lagu ini?")) return false;
+  
+  // Cari lagu yang akan dihapus
+  const songToDelete = songs.find(s => s.id === id);
+  
+  // Hapus file dari storage jika ada
+  if (songToDelete?.url && songToDelete.url.includes('supabase.co')) {
+    const urlParts = songToDelete.url.split('/');
+    const fileName = `songs/${urlParts[urlParts.length - 1]}`;
+    await supabase.storage.from('music').remove([fileName]);
+  }
+  
+  const { error } = await supabase.from('songs').delete().eq('id', id);
+  if (error) {
+    alert('Gagal hapus lagu: ' + error.message);
+    return false;
+  }
+  await loadSongs();
+  return true;
+};
 
   const handleLogout = () => {
     localStorage.removeItem("nexuz_admin_auth");
@@ -808,7 +859,7 @@ export default function AdminPage() {
                 <Music className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>Belum ada lagu. Tambah lagu pertama kamu!</p>
                 <p className="text-xs mt-2 text-gray-500">
-                  Upload file MP3 (max 5MB)
+                  Upload file MP3 (max 10MB)
                 </p>
               </div>
             ) : (

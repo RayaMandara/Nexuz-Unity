@@ -81,7 +81,7 @@ const MemoryBook = () => {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
@@ -99,7 +99,7 @@ const MemoryBook = () => {
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            viewport={{ once: false, margin: "-100px" }}
             className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl p-6 border border-white/10"
           >
             <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
@@ -163,7 +163,7 @@ const MemoryBook = () => {
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            viewport={{ once: false, margin: "-100px" }}
             className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scroll"
           >
             {memories.length === 0 ? (

@@ -71,7 +71,7 @@ const Gallery = () => {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
@@ -95,7 +95,7 @@ const Gallery = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
-                viewport={{ once: true }}
+                viewport={{ once: false, margin: "-100px" }}
                 whileHover={{ y: -5 }}
                 onClick={() => handleImageClick(index)}
                 className="group cursor-pointer"

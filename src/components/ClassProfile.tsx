@@ -108,7 +108,7 @@ const ClassProfile = () => {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
@@ -125,7 +125,7 @@ const ClassProfile = () => {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-white/10"
         >
           <h3 className="text-2xl font-semibold mb-4">Tentang Kelas Nexuz</h3>
@@ -146,7 +146,7 @@ const ClassProfile = () => {
               initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              viewport={{ once: false, margin: "-100px" }}
               className="flex items-center gap-4 bg-white/5 rounded-xl p-5 border border-white/10"
             >
               <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
@@ -168,7 +168,7 @@ const ClassProfile = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              viewport={{ once: false, margin: "-100px" }}
               whileHover={{ y: -5 }}
               className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl p-6 text-center border border-white/10 backdrop-blur-sm"
             >
@@ -192,7 +192,7 @@ const ClassProfile = () => {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           className="text-center mt-12 pt-8 border-t border-white/10"
         >
           <p className="text-gray-400 italic text-lg">

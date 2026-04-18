@@ -57,7 +57,7 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
-      viewport={{ once: true }}
+      viewport={{ once: false, margin: "-100px" }}
       whileHover={{ y: -8, scale: 1.02 }}
       onClick={onClick}
       className="group cursor-pointer"

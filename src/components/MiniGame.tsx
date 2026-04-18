@@ -20,9 +20,10 @@ interface Student {
 
 const MiniGame = () => {
   const [students, setStudents] = useState<Student[]>([]);
-  const [remainingStudents, setRemainingStudents] = useState<Student[]>([]);
+  const [gameQueue, setGameQueue] = useState<Student[]>([]);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [options, setOptions] = useState<string[]>([]);
+  const [optionsEmojis, setOptionsEmojis] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [round, setRound] = useState(1);
@@ -30,6 +31,44 @@ const MiniGame = () => {
   const [messageType, setMessageType] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [gameOver, setGameOver] = useState(false);
+  const TOTAL_ROUNDS = 10;
+
+  const funnyEmojis = [
+    "😀",
+    "😂",
+    "🤣",
+    "😎",
+    "🤔",
+    "🥴",
+    "😜",
+    "🤪",
+    "😏",
+    "🙃",
+    "😇",
+    "🥳",
+    "😱",
+    "🤯",
+    "😈",
+    "👻",
+    "💀",
+    "🔥",
+    "⭐",
+    "💪",
+    "🤘",
+    "✌️",
+    "👌",
+    "👍",
+    "💯",
+    "🎉",
+    "✨",
+    "🌟",
+    "💎",
+    "🎈",
+  ];
+
+  const getRandomEmoji = () => {
+    return funnyEmojis[Math.floor(Math.random() * funnyEmojis.length)];
+  };
 
   useEffect(() => {
     fetchStudents();
@@ -38,84 +77,123 @@ const MiniGame = () => {
   }, []);
 
   const fetchStudents = async () => {
-    const { data, error } = await supabase
-      .from('students')
-      .select('*')
-      .order('id', { ascending: true });
-    
-    if (error) {
-      console.error('Error fetching students:', error);
-    } else {
-      setStudents(data || []);
-      setRemainingStudents([...(data || [])]);
-      if (data && data.length > 0) {
-        newRound(data);
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching students:", error);
+        return;
       }
+
+      console.log("Fetched students count:", data?.length);
+
+      // Filter siswa yang bukan wali kelas
+      const studentList = (data || []).filter((s) => s.is_teacher !== true);
+      console.log("Students after filter (non-teacher):", studentList.length);
+
+      setStudents(studentList);
+
+      if (studentList.length >= 4) {
+        const shuffled = shuffleArray([...studentList]);
+        setGameQueue(shuffled);
+        startNewRound(shuffled, studentList);
+      } else {
+        console.log("Not enough students, need at least 4");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const shuffleArray = (arr: any[]) => {
-    for (let i = arr.length - 1; i > 0; i--) {
+    const newArr = [...arr];
+    for (let i = newArr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+      [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
     }
-    return arr;
+    return newArr;
   };
 
-  const newRound = (studentsData = students) => {
-    if (studentsData.length === 0) return;
-    
-    setIsLoading(true);
-    
-    let student;
-    if (remainingStudents.length === 0) {
-      setRemainingStudents(shuffleArray([...studentsData]));
-      student = remainingStudents[0] || studentsData[0];
-    } else {
-      student = remainingStudents[0];
+  const startNewRound = (queue: Student[], allStudents = students) => {
+    if (!queue || queue.length === 0) {
+      console.log("Queue is empty");
+      setIsLoading(false);
+      return;
     }
-    
-    setRemainingStudents(prev => prev.slice(1));
-    
-    const otherNames = studentsData
-      .filter((s: Student) => s.id !== student.id)
-      .map((s: Student) => s.nickname);
-    
-    const shuffledOthers = shuffleArray([...otherNames]);
-    const randomOptions = shuffleArray([student.nickname, ...shuffledOthers.slice(0, 3)]);
-    
+
+    const student = queue[0];
+    console.log("Current student:", student.nickname);
+
+    // Ambil 3 siswa lain secara acak
+    const otherStudents = allStudents.filter((s) => s.id !== student.id);
+    console.log("Other students count:", otherStudents.length);
+
+    if (otherStudents.length === 0) {
+      setCurrentStudent(student);
+      setOptions([student.nickname]);
+      setOptionsEmojis([getRandomEmoji()]);
+      setIsLoading(false);
+      return;
+    }
+
+    // Acak dan ambil 3 siswa lain
+    const shuffledOthers = shuffleArray([...otherStudents]);
+    const selectedOthers = shuffledOthers.slice(0, 3);
+    const otherNames = selectedOthers.map((s) => s.nickname);
+
+    // Gabungkan nickname siswa + 3 lainnya
+    const allOptions = [student.nickname, ...otherNames];
+    const randomOptions = shuffleArray([...allOptions]);
+    const randomEmojis = randomOptions.map(() => getRandomEmoji());
+
+    console.log("Options:", randomOptions);
+
     setCurrentStudent(student);
     setOptions(randomOptions);
+    setOptionsEmojis(randomEmojis);
     setIsLoading(false);
   };
 
-  const handleAnswer = (selectedName: string) => {
+  const handleAnswer = (selectedName: string, emoji: string) => {
     if (isLoading || gameOver || !currentStudent) return;
 
     if (selectedName === currentStudent.nickname) {
       const newScore = score + 10;
       setScore(newScore);
-      setMessage("Benar! +10 poin");
+      setMessage(`Benar! ${emoji} +10 poin`);
       setMessageType("success");
-      
+
       if (newScore > highScore) {
         setHighScore(newScore);
         localStorage.setItem("nexuz_game_highscore", newScore.toString());
       }
-      
+
+      const newQueue = gameQueue.slice(1);
+      setGameQueue(newQueue);
+
       setTimeout(() => {
         setMessage("");
-        if (round < 10) {
+        if (round < TOTAL_ROUNDS) {
           setRound(round + 1);
-          newRound();
+          if (newQueue.length === 0) {
+            const freshQueue = shuffleArray([...students]);
+            setGameQueue(freshQueue);
+            startNewRound(freshQueue, students);
+          } else {
+            startNewRound(newQueue, students);
+          }
         } else {
           setGameOver(true);
           setMessage(`🎉 Selesai! Skor akhir: ${newScore}`);
         }
       }, 1000);
     } else {
-      setMessage(`Salah! Itu adalah ${currentStudent.nickname}`);
+      setMessage(`❌ Salah! ${emoji} Itu adalah ${currentStudent.nickname}`);
       setMessageType("error");
       setGameOver(true);
     }
@@ -126,13 +204,22 @@ const MiniGame = () => {
     setRound(1);
     setGameOver(false);
     setMessage("");
-    setRemainingStudents(shuffleArray([...students]));
-    newRound();
+    const freshQueue = shuffleArray([...students]);
+    setGameQueue(freshQueue);
+    startNewRound(freshQueue, students);
+  };
+
+  const getBlurLevel = () => {
+    const blur = Math.min(15, Math.max(2, 2 + (round - 1) * 1.3));
+    return Math.round(blur);
   };
 
   if (isLoading) {
     return (
-      <section id="game" className="py-24 px-6 bg-black min-h-screen flex items-center">
+      <section
+        id="game"
+        className="py-24 px-6 bg-black min-h-screen flex items-center"
+      >
         <div className="container mx-auto max-w-2xl text-center">
           <div className="text-gray-400">Loading game...</div>
         </div>
@@ -140,24 +227,38 @@ const MiniGame = () => {
     );
   }
 
-  if (students.length === 0) {
+  if (students.length < 4) {
     return (
-      <section id="game" className="py-24 px-6 bg-black min-h-screen flex items-center">
+      <section
+        id="game"
+        className="py-24 px-6 bg-black min-h-screen flex items-center"
+      >
         <div className="container mx-auto max-w-2xl text-center">
-          <p className="text-gray-400">Tidak ada data siswa. Silakan tambah siswa di admin panel terlebih dahulu.</p>
+          <p className="text-gray-400">Minimal 4 siswa untuk bermain game.</p>
+          <p className="text-gray-500 text-sm mt-2">
+            Saat ini hanya {students.length} siswa (wali kelas tidak termasuk).
+          </p>
+          <p className="text-gray-500 text-sm">
+            Silakan tambah siswa di admin panel.
+          </p>
         </div>
       </section>
     );
   }
 
+  const blurLevel = getBlurLevel();
+
   return (
-    <section id="game" className="py-24 px-6 bg-black min-h-screen flex items-center">
+    <section
+      id="game"
+      className="py-24 px-6 bg-black min-h-screen flex items-center"
+    >
       <div className="container mx-auto max-w-2xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-100px" }}
           className="text-center mb-8"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
@@ -181,7 +282,9 @@ const MiniGame = () => {
           </div>
           <div className="text-center">
             <p className="text-gray-400 text-xs">Round</p>
-            <p className="text-white font-bold text-xl">{round}/10</p>
+            <p className="text-white font-bold text-xl">
+              {round}/{TOTAL_ROUNDS}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <Star className="w-5 h-5 text-yellow-400" />
@@ -212,15 +315,22 @@ const MiniGame = () => {
                       alt="Tebak siapa?"
                       className="w-48 h-48 rounded-full object-cover mx-auto shadow-2xl"
                       style={{
-                        filter: `blur(${Math.max(3, 10 - Math.floor(round / 2))}px)`,
-                        objectPosition: `${currentStudent.image_position_x || 50}% ${currentStudent.image_position_y || 50}%`
+                        filter: `blur(${blurLevel}px)`,
+                        objectPosition: `${currentStudent.image_position_x || 50}% ${currentStudent.image_position_y || 50}%`,
                       }}
                     />
                     <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/50 to-transparent" />
                   </motion.div>
                 )}
-                <p className="text-gray-400 mt-4 text-sm">
-                  Level blur: {Math.max(3, 10 - Math.floor(round / 2))}px
+                <p className="mt-4 text-sm font-semibold">
+                  <span>Level : </span> 
+                  {blurLevel <= 4 ? (
+                    <span className="text-green-400">Easy</span>
+                  ) : blurLevel <= 8 ? (
+                    <span className="text-yellow-400">Medium</span>
+                  ) : (
+                    <span className="text-red-400">Hard</span>
+                  )}
                 </p>
               </div>
 
@@ -233,10 +343,11 @@ const MiniGame = () => {
                     transition={{ delay: index * 0.1 }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => handleAnswer(option)}
-                    className="bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl py-3 px-4 text-white font-medium transition-all"
+                    onClick={() => handleAnswer(option, optionsEmojis[index])}
+                    className="bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl py-3 px-4 text-white font-medium transition-all flex items-center justify-center gap-2"
                   >
-                    {option}
+                    <span className="text-xl">{optionsEmojis[index]}</span>
+                    <span>{option}</span>
                   </motion.button>
                 ))}
               </div>
@@ -248,8 +359,8 @@ const MiniGame = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className={`p-3 rounded-lg ${
-                      messageType === "success" 
-                        ? "bg-green-500/20 text-green-400" 
+                      messageType === "success"
+                        ? "bg-green-500/20 text-green-400"
                         : "bg-red-500/20 text-red-400"
                     }`}
                   >
@@ -268,7 +379,9 @@ const MiniGame = () => {
               <h3 className="text-2xl font-bold text-white mb-2">Game Over!</h3>
               <p className="text-gray-400 mb-2">Skor akhir kamu: {score}</p>
               {score === highScore && score > 0 && (
-                <p className="text-yellow-400 mb-4">🎉 Skor tertinggi baru! 🎉</p>
+                <p className="text-yellow-400 mb-4">
+                  🎉 Skor tertinggi baru! 🎉
+                </p>
               )}
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -284,9 +397,7 @@ const MiniGame = () => {
         </motion.div>
 
         <div className="text-center mt-6 text-gray-500 text-xs">
-          <p>💡 Semakin tinggi round, foto semakin jelas!</p>
           <p>🏆 Jawab 10 pertanyaan dengan benar untuk menang</p>
-          <p>🎲 Setiap siswa hanya muncul sekali dalam 1 game</p>
         </div>
       </div>
     </section>
