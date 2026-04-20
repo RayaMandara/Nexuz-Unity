@@ -32,6 +32,7 @@ export default function RootLayout({
         <link rel="alternate icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
+        <meta name="google-site-verification" content="-184KKQG6aJWc0cf1krrfp3zkEsVqKBZlmrI_vKdn7U" />
       </head>
       <body className={inter.className}>
         {children}
