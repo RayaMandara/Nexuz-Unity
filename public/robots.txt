@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://nexuz-unity.vercel.app
+
+# Sitemaps
+Sitemap: https://nexuz-unity.vercel.app/sitemap.xml
