@@ -34,6 +34,7 @@ interface Student {
   image_position_y: number;
   is_teacher?: boolean;
   role?: string;
+  gender?: string;
 }
 
 interface GalleryImage {
@@ -186,61 +187,77 @@ export default function AdminPage() {
   };
 
   // Validasi role sebelum tambah/edit
-  const validateRole = async (formData: any, isEdit: boolean, currentId?: number) => {
+  const validateRole = async (
+    formData: any,
+    isEdit: boolean,
+    currentId?: number,
+  ) => {
     // Ambil semua data siswa dari database
     const { data: allStudents } = await supabase
-      .from('students')
-      .select('id, role, is_teacher');
-    
+      .from("students")
+      .select("id, role, is_teacher");
+
     // Cek Wali Kelas (hanya boleh 1)
     if (formData.is_teacher) {
-      const existingTeacher = allStudents?.find(s => s.is_teacher === true && s.id !== currentId);
+      const existingTeacher = allStudents?.find(
+        (s) => s.is_teacher === true && s.id !== currentId,
+      );
       if (existingTeacher) {
-        alert('❌ Wali Kelas sudah ada! Hanya boleh 1 Wali Kelas.');
+        alert("❌ Wali Kelas sudah ada! Hanya boleh 1 Wali Kelas.");
         return false;
       }
     }
-    
+
     // Cek Ketua Kelas (hanya boleh 1)
-    if (formData.role === 'ketua') {
-      const existingKetua = allStudents?.find(s => s.role === 'ketua' && s.id !== currentId);
+    if (formData.role === "ketua") {
+      const existingKetua = allStudents?.find(
+        (s) => s.role === "ketua" && s.id !== currentId,
+      );
       if (existingKetua) {
-        alert('❌ Ketua Kelas sudah ada! Hanya boleh 1 Ketua Kelas.');
+        alert("❌ Ketua Kelas sudah ada! Hanya boleh 1 Ketua Kelas.");
         return false;
       }
     }
-    
+
     // Cek Wakil Ketua (hanya boleh 1)
-    if (formData.role === 'wakil') {
-      const existingWakil = allStudents?.find(s => s.role === 'wakil' && s.id !== currentId);
+    if (formData.role === "wakil") {
+      const existingWakil = allStudents?.find(
+        (s) => s.role === "wakil" && s.id !== currentId,
+      );
       if (existingWakil) {
-        alert('❌ Wakil Ketua sudah ada! Hanya boleh 1 Wakil Ketua.');
+        alert("❌ Wakil Ketua sudah ada! Hanya boleh 1 Wakil Ketua.");
         return false;
       }
     }
-    
+
     // Cek Sekretaris (maksimal 2)
-    if (formData.role === 'sekretaris1' || formData.role === 'sekretaris2') {
-      const existingSekretaris = allStudents?.filter(s => 
-        (s.role === 'sekretaris1' || s.role === 'sekretaris2') && s.id !== currentId
-      ).length || 0;
+    if (formData.role === "sekretaris1" || formData.role === "sekretaris2") {
+      const existingSekretaris =
+        allStudents?.filter(
+          (s) =>
+            (s.role === "sekretaris1" || s.role === "sekretaris2") &&
+            s.id !== currentId,
+        ).length || 0;
       if (existingSekretaris >= 2) {
-        alert('❌ Sekretaris sudah mencapai 2 orang! Tidak bisa tambah lagi.');
+        alert("❌ Sekretaris sudah mencapai 2 orang! Tidak bisa tambah lagi.");
         return false;
       }
     }
-    
+
     // Cek Bendahara (maksimal 2)
-    if (formData.role === 'bendahara1' || formData.role === 'bendahara2') {
-      const existingBendahara = allStudents?.filter(s => 
-        (s.role === 'bendahara1' || s.role === 'bendahara2') && s.id !== currentId
-      ).length || 0;
+    if (formData.role === "bendahara1" || formData.role === "bendahara2") {
+      const existingBendahara =
+        allStudents?.filter(
+          (s) =>
+            (s.role === "bendahara1" || s.role === "bendahara2") &&
+            s.id !== currentId,
+        ).length || 0;
       if (existingBendahara >= 2) {
-        alert('❌ Bendahara sudah mencapai 2 orang! Tidak bisa tambah lagi.');
+        alert("❌ Bendahara sudah mencapai 2 orang! Tidak bisa tambah lagi.");
         return false;
       }
     }
-    
+
     return true;
   };
 
@@ -249,7 +266,7 @@ export default function AdminPage() {
     // Validasi sebelum tambah
     const isValid = await validateRole(student, false);
     if (!isValid) return false;
-    
+
     const newStudent = { ...student, id: Date.now(), jurusan: "RPL" };
     const { error } = await supabase.from("students").insert([newStudent]);
 
@@ -265,7 +282,7 @@ export default function AdminPage() {
     // Validasi sebelum update
     const isValid = await validateRole(updatedData, true, id);
     if (!isValid) return false;
-    
+
     const { error } = await supabase
       .from("students")
       .update({ ...updatedData, jurusan: "RPL" })
@@ -383,79 +400,81 @@ export default function AdminPage() {
   };
 
   // CRUD Songs
-const addSong = async (song: Omit<Song, "id">) => {
-  try {
-    // Konversi base64 ke File
-    const base64Data = song.url.split(',')[1];
-    const byteCharacters = atob(base64Data);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const file = new File([byteArray], `${Date.now()}.mp3`, { type: 'audio/mpeg' });
-    
-    // Upload ke Supabase Storage (bucket 'music')
-    const fileName = `songs/${Date.now()}.mp3`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('music')
-      .upload(fileName, file);
-    
-    if (uploadError) {
-      alert('Gagal upload file ke storage: ' + uploadError.message);
+  const addSong = async (song: Omit<Song, "id">) => {
+    try {
+      // Konversi base64 ke File
+      const base64Data = song.url.split(",")[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const file = new File([byteArray], `${Date.now()}.mp3`, {
+        type: "audio/mpeg",
+      });
+
+      // Upload ke Supabase Storage (bucket 'music')
+      const fileName = `songs/${Date.now()}.mp3`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("music")
+        .upload(fileName, file);
+
+      if (uploadError) {
+        alert("Gagal upload file ke storage: " + uploadError.message);
+        return false;
+      }
+
+      // Dapatkan public URL
+      const { data: urlData } = supabase.storage
+        .from("music")
+        .getPublicUrl(fileName);
+
+      // Simpan URL ke database (BUKAN base64)
+      const newSong = {
+        title: song.title,
+        artist: song.artist,
+        url: urlData.publicUrl,
+        id: Date.now(),
+        duration: 0,
+      };
+
+      const { error: dbError } = await supabase.from("songs").insert([newSong]);
+
+      if (dbError) {
+        alert("Gagal menambah lagu ke database: " + dbError.message);
+        return false;
+      }
+      await loadSongs();
+      return true;
+    } catch (err) {
+      console.error("Error adding song:", err);
+      alert("Terjadi kesalahan saat menambah lagu");
       return false;
     }
-    
-    // Dapatkan public URL
-    const { data: urlData } = supabase.storage
-      .from('music')
-      .getPublicUrl(fileName);
-    
-    // Simpan URL ke database (BUKAN base64)
-    const newSong = {
-      title: song.title,
-      artist: song.artist,
-      url: urlData.publicUrl,
-      id: Date.now(),
-      duration: 0,
-    };
-    
-    const { error: dbError } = await supabase.from('songs').insert([newSong]);
-    
-    if (dbError) {
-      alert('Gagal menambah lagu ke database: ' + dbError.message);
+  };
+
+  const deleteSong = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus lagu ini?")) return false;
+
+    // Cari lagu yang akan dihapus
+    const songToDelete = songs.find((s) => s.id === id);
+
+    // Hapus file dari storage jika ada
+    if (songToDelete?.url && songToDelete.url.includes("supabase.co")) {
+      const urlParts = songToDelete.url.split("/");
+      const fileName = `songs/${urlParts[urlParts.length - 1]}`;
+      await supabase.storage.from("music").remove([fileName]);
+    }
+
+    const { error } = await supabase.from("songs").delete().eq("id", id);
+    if (error) {
+      alert("Gagal hapus lagu: " + error.message);
       return false;
     }
     await loadSongs();
     return true;
-  } catch (err) {
-    console.error('Error adding song:', err);
-    alert('Terjadi kesalahan saat menambah lagu');
-    return false;
-  }
-};
-
-const deleteSong = async (id: number) => {
-  if (!confirm("Yakin ingin menghapus lagu ini?")) return false;
-  
-  // Cari lagu yang akan dihapus
-  const songToDelete = songs.find(s => s.id === id);
-  
-  // Hapus file dari storage jika ada
-  if (songToDelete?.url && songToDelete.url.includes('supabase.co')) {
-    const urlParts = songToDelete.url.split('/');
-    const fileName = `songs/${urlParts[urlParts.length - 1]}`;
-    await supabase.storage.from('music').remove([fileName]);
-  }
-  
-  const { error } = await supabase.from('songs').delete().eq('id', id);
-  if (error) {
-    alert('Gagal hapus lagu: ' + error.message);
-    return false;
-  }
-  await loadSongs();
-  return true;
-};
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("nexuz_admin_auth");
@@ -610,14 +629,20 @@ const deleteSong = async (id: number) => {
                               Wali Kelas
                             </span>
                           )}
-                          {!student.is_teacher && student.role && student.role !== "siswa" && (
-                            <span className="ml-2 text-xs bg-blue-500/30 text-blue-400 px-2 py-0.5 rounded-full">
-                              {student.role === "ketua" && "Ketua Kelas"}
-                              {student.role === "wakil" && "Wakil Ketua"}
-                              {(student.role === "sekretaris1" || student.role === "sekretaris2") && "Sekretaris"}
-                              {(student.role === "bendahara1" || student.role === "bendahara2") && "Bendahara"}
-                            </span>
-                          )}
+                          {!student.is_teacher &&
+                            student.role &&
+                            student.role !== "siswa" && (
+                              <span className="ml-2 text-xs bg-blue-500/30 text-blue-400 px-2 py-0.5 rounded-full">
+                                {student.role === "ketua" && "Ketua Kelas"}
+                                {student.role === "wakil" && "Wakil Ketua"}
+                                {(student.role === "sekretaris1" ||
+                                  student.role === "sekretaris2") &&
+                                  "Sekretaris"}
+                                {(student.role === "bendahara1" ||
+                                  student.role === "bendahara2") &&
+                                  "Bendahara"}
+                              </span>
+                            )}
                         </p>
                       </div>
                     </div>
@@ -1041,6 +1066,17 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
         ],
         default: "siswa",
       },
+      // 👇 TARUH DI SINI (setelah role, sebelum hobby)
+      {
+        name: "gender",
+        label: "Jenis Kelamin",
+        type: "select",
+        options: [
+          { value: "L", label: "Laki-laki" },
+          { value: "P", label: "Perempuan" },
+        ],
+        default: "L",
+      },
       { name: "hobby", label: "Hobi", type: "text", required: true },
       { name: "dream", label: "Cita-cita", type: "text", required: true },
       {
@@ -1110,10 +1146,10 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
             {tab === "siswa"
               ? "Siswa"
               : tab === "galeri"
-              ? "Galeri"
-              : tab === "timeline"
-              ? "Timeline"
-              : "Musik"}
+                ? "Galeri"
+                : tab === "timeline"
+                  ? "Timeline"
+                  : "Musik"}
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
             <X className="w-5 h-5" />
@@ -1145,8 +1181,8 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                     {uploading
                       ? "Uploading..."
                       : formData[field.name]
-                      ? "Ganti File"
-                      : "Pilih File"}
+                        ? "Ganti File"
+                        : "Pilih File"}
                   </button>
 
                   {formData[field.name] &&
@@ -1197,7 +1233,10 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                     type="checkbox"
                     checked={formData[field.name] || false}
                     onChange={(e) =>
-                      setFormData({ ...formData, [field.name]: e.target.checked })
+                      setFormData({
+                        ...formData,
+                        [field.name]: e.target.checked,
+                      })
                     }
                     className="w-4 h-4 rounded border-white/20 bg-white/10 text-white focus:ring-white/50"
                   />
@@ -1210,10 +1249,14 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                     setFormData({ ...formData, [field.name]: e.target.value })
                   }
                   className="w-full bg-black/60 border border-white/20 rounded-lg py-2 px-3 text-white focus:outline-none focus:border-white/50 appearance-none cursor-pointer"
-                  style={{ colorScheme: 'dark' }}
+                  style={{ colorScheme: "dark" }}
                 >
                   {field.options.map((opt: any) => (
-                    <option key={opt.value} value={opt.value} className="bg-black text-white py-1">
+                    <option
+                      key={opt.value}
+                      value={opt.value}
+                      className="bg-black text-white py-1"
+                    >
                       {opt.label}
                     </option>
                   ))}

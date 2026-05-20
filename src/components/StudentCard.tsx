@@ -93,7 +93,10 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
           {/* Nama lengkap */}
           <p className="text-gray-400 text-sm mb-3 truncate" title={student.name}>
             {student.name}
+            
           </p>
+
+          
           
           <div className="flex items-center gap-2 text-gray-400 text-sm">
             <User className="w-4 h-4" />
