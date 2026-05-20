@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Nexuz-Unity",
+  title: "Nexuz Unity",
   description: "Website kelas PPLG Angkatan 19",
   icons: {
     icon: [
