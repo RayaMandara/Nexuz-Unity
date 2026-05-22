@@ -10,6 +10,7 @@ import MemoryBook from "@/components/MemoryBook";
 import MusicPlayer from "@/components/MusicPlayer";
 import MiniGame from "@/components/MiniGame";
 import Footer from "@/components/Footer";
+import ProjectsGallery from "@/components/ProjectsGallery";
 
 export default function Home() {
   return (
@@ -20,12 +21,13 @@ export default function Home() {
       <StudentList />
       <Gallery />
       <Timeline />
-      <MemoryBook />
+      <ProjectsGallery />
       <div id="music" className="relative py-16">
         <MusicPlayer />
       </div>
-
       <MiniGame />
+
+      <MemoryBook />
       <Footer />
     </main>
   );

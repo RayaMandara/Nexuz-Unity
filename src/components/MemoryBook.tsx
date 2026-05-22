@@ -118,7 +118,7 @@ const MemoryBook = () => {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Contoh: Budi, Purnama, Mulia"
+                    placeholder="Contoh: Raya, Nanda, Eka"
                     className="w-full bg-white/10 border border-white/20 rounded-lg py-2 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-white/50 transition-colors"
                     required
                   />
@@ -132,7 +132,7 @@ const MemoryBook = () => {
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Tulis pesan kenanganmu untuk kelas Nexuz..."
+                  placeholder="Tulis pesan kenanganmu..."
                   rows={4}
                   className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-white/50 transition-colors resize-none"
                   required

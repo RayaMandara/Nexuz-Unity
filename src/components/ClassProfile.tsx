@@ -3,10 +3,25 @@
 import { useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { Users, Calendar, Heart, MapPin, Clock, CalendarDays } from "lucide-react";
+import {
+  Users,
+  Calendar,
+  Heart,
+  MapPin,
+  Clock,
+  CalendarDays,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-const CountUp = ({ end, duration = 2, suffix = "" }: { end: number; duration?: number; suffix?: string }) => {
+const CountUp = ({
+  end,
+  duration = 2,
+  suffix = "",
+}: {
+  end: number;
+  duration?: number;
+  suffix?: string;
+}) => {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -30,7 +45,8 @@ const CountUp = ({ end, duration = 2, suffix = "" }: { end: number; duration?: n
 
   return (
     <span ref={ref}>
-      {count}{suffix}
+      {count}
+      {suffix}
     </span>
   );
 };
@@ -53,10 +69,11 @@ const ClassProfile = () => {
     fetchStudentCount();
 
     const subscription = supabase
-      .channel('students-channel')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'students' }, 
-        () => fetchStudentCount()
+      .channel("students-channel")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "students" },
+        () => fetchStudentCount(),
       )
       .subscribe();
 
@@ -67,11 +84,12 @@ const ClassProfile = () => {
 
   const fetchStudentCount = async () => {
     const { count, error } = await supabase
-      .from('students')
-      .select('*', { count: 'exact', head: true });
-    
+      .from("students")
+      .select("*", { count: "exact", head: true })
+      .eq("is_teacher", false);
+
     if (error) {
-      console.error('Error fetching student count:', error);
+      console.error("Error fetching student count:", error);
     } else {
       setStudentCount(count || 0);
     }
@@ -81,12 +99,21 @@ const ClassProfile = () => {
   const stats = [
     { icon: Users, value: studentCount, label: "Siswa/Siswi", suffix: "" },
     { icon: Calendar, value: 2024, label: "Angkatan", suffix: "" },
-    { icon: CalendarDays, value: daysTogether, label: "Hari Bersama", suffix: "" },
+    {
+      icon: CalendarDays,
+      value: daysTogether,
+      label: "Hari Bersama",
+      suffix: "",
+    },
     { icon: Heart, value: null, label: "Kenangan", suffix: "∞" },
   ];
 
   const infoItems = [
-    { icon: MapPin, label: "Lokasi", value: "SMK Pariwisata Triatma Jaya Badung" },
+    {
+      icon: MapPin,
+      label: "Lokasi",
+      value: "SMK Pariwisata Triatma Jaya Badung",
+    },
     { icon: Clock, label: "Tahun Ajaran", value: "2024 - 2027" },
   ];
 
@@ -130,11 +157,16 @@ const ClassProfile = () => {
         >
           <h3 className="text-2xl font-semibold mb-4">Tentang Kelas Nexuz</h3>
           <p className="text-gray-300 leading-relaxed">
-            Kelas Nexuz adalah kelas yang terdiri dari <span className="text-white font-semibold">{studentCount}</span> siswa-siswi berbakat dengan semangat belajar tinggi. 
-            Kami telah bersama selama <span className="text-white font-semibold">{daysTogether}</span> hari penuh kenangan.
-            Kami memiliki visi menciptakan generasi yang tidak hanya cerdas secara akademik, tetapi juga memiliki 
-            karakter kuat dan jiwa kepemimpinan. Dengan didukung oleh guru-guru profesional dan fasilitas modern, 
-            kami terus berinovasi dan berprestasi di berbagai bidang.
+            Kelas Nexuz adalah kelas yang terdiri dari{" "}
+            <span className="text-white font-semibold">{studentCount}</span>{" "}
+            siswa-siswi berbakat dengan semangat belajar tinggi. Kami telah
+            bersama selama{" "}
+            <span className="text-white font-semibold">{daysTogether}</span>{" "}
+            hari penuh kenangan. Kami memiliki visi menciptakan generasi yang
+            tidak hanya cerdas secara akademik, tetapi juga memiliki karakter
+            kuat dan jiwa kepemimpinan. Dengan didukung oleh guru-guru
+            profesional dan fasilitas modern, kami terus berinovasi dan
+            berprestasi di berbagai bidang.
           </p>
         </motion.div>
 

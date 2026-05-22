@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Shield, Lock, X as XIcon } from "lucide-react"; 
 import {
+  Shield,
+  Lock,
+  X as XIcon,
   Home,
   Users,
   Image,
@@ -12,6 +14,8 @@ import {
   Gamepad2,
   Music,
   X,
+  FolderGit2,
+  GraduationCap,
 } from "lucide-react";
 
 import { expandMusicPlayer } from "./MusicPlayer";
@@ -33,11 +37,11 @@ const FloatingMenu = () => {
 
   const menuItems = [
     { name: "Beranda", icon: Home, href: "#home" },
-    { name: "Profil", icon: Users, href: "#profil" },
+    { name: "Profil", icon: GraduationCap, href: "#profil" },
     { name: "Siswa", icon: Users, href: "#siswa" },
     { name: "Galeri", icon: Image, href: "#galeri" },
     { name: "Timeline", icon: Clock, href: "#timeline" },
-    { name: "Kenangan", icon: BookMarked, href: "#kenangan" },
+    { name: "Projek", icon: FolderGit2, href: "#projek" },
     { name: "Game", icon: Gamepad2, href: "#game" },
     { name: "Admin", icon: Shield, href: "#admin" },
   ];
@@ -64,7 +68,7 @@ const FloatingMenu = () => {
       const loginTime = Date.now();
       localStorage.setItem("nexuz_admin_auth", "true");
       localStorage.setItem("nexuz_admin_login_time", loginTime.toString());
-      
+
       setShowAdminModal(false);
       setAdminPassword("");
       setPasswordError("");
@@ -74,14 +78,11 @@ const FloatingMenu = () => {
     }
   };
 
-  // Posisi tombol: di kiri, di ATAS music player (jarak aman)
-  // Music player ada di bottom-6 (24px) dan icon minimized di bottom-28 (112px)
-  // Maka tombol floating menu di bottom-44 (176px) agar tidak benturan
   const buttonPosition = scrolled ? "bottom-44" : "bottom-48";
 
   return (
     <>
-      {/* Floating Button - Posisi Kiri Bawah (di atas music player) */}
+      {/* Floating Button */}
       <motion.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -98,9 +99,9 @@ const FloatingMenu = () => {
           {isOpen ? (
             <X className="text-white w-6 h-6" />
           ) : (
-            <img 
-              src="/Logo.png" 
-              alt="Nexuz Logo" 
+            <img
+              src="/Logo.png"
+              alt="Nexuz Logo"
               className="w-12 h-12 object-cover"
             />
           )}
@@ -119,7 +120,6 @@ const FloatingMenu = () => {
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
             />
 
-            {/* Menu Items - Tetap di Tengah Layar */}
             <div
               className="fixed z-50"
               style={{
@@ -139,12 +139,7 @@ const FloatingMenu = () => {
                   <motion.button
                     key={item.name}
                     initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                    animate={{
-                      opacity: 1,
-                      scale: 1,
-                      x: x,
-                      y: y,
-                    }}
+                    animate={{ opacity: 1, scale: 1, x, y }}
                     exit={{ opacity: 0, scale: 0, x: 0, y: 0 }}
                     transition={{ delay: index * 0.03, type: "spring" }}
                     onClick={() => handleClick(item)}
@@ -193,7 +188,9 @@ const FloatingMenu = () => {
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center gap-2">
                     <Lock className="w-6 h-6 text-white" />
-                    <h2 className="text-xl font-bold text-white">Admin Access</h2>
+                    <h2 className="text-xl font-bold text-white">
+                      Admin Access
+                    </h2>
                   </div>
                   <button
                     onClick={() => {

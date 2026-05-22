@@ -15,11 +15,13 @@ import {
   RefreshCw,
   Music,
   Play,
+  FolderGit2,
+  ExternalLink,
+  Calendar,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import ImageCropper from "@/components/ImageCropper";
 
-// Tipe data
 interface Student {
   id: number;
   name: string;
@@ -42,6 +44,8 @@ interface GalleryImage {
   src: string;
   title: string;
   date: string;
+  year: string;
+  description: string;
 }
 
 interface TimelineEvent {
@@ -69,6 +73,17 @@ interface Song {
   duration: number;
 }
 
+interface Project {
+  id: number;
+  name: string;
+  image_url: string;
+  tech_stack: string;
+  description: string;
+  project_link: string | null;
+  year: string;
+  status: string;
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +95,7 @@ export default function AdminPage() {
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [songs, setSongs] = useState<Song[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -117,6 +133,7 @@ export default function AdminPage() {
       loadTimeline(),
       loadMemories(),
       loadSongs(),
+      loadProjects(),
     ]);
     setIsRefreshing(false);
   };
@@ -126,7 +143,6 @@ export default function AdminPage() {
       .from("students")
       .select("*")
       .order("id", { ascending: true });
-
     if (error) {
       console.error("Error loading students:", error);
     } else {
@@ -139,7 +155,6 @@ export default function AdminPage() {
       .from("gallery")
       .select("*")
       .order("id", { ascending: true });
-
     if (error) {
       console.error("Error loading gallery:", error);
     } else {
@@ -152,7 +167,6 @@ export default function AdminPage() {
       .from("timeline")
       .select("*")
       .order("id", { ascending: true });
-
     if (error) {
       console.error("Error loading timeline:", error);
     } else {
@@ -165,7 +179,6 @@ export default function AdminPage() {
       .from("memories")
       .select("*")
       .order("id", { ascending: false });
-
     if (error) {
       console.error("Error loading memories:", error);
     } else {
@@ -178,11 +191,22 @@ export default function AdminPage() {
       .from("songs")
       .select("*")
       .order("id", { ascending: true });
-
     if (error) {
       console.error("Error loading songs:", error);
     } else {
       setSongs(data || []);
+    }
+  };
+
+  const loadProjects = async () => {
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .order("id", { ascending: false });
+    if (error) {
+      console.error("Error loading projects:", error);
+    } else {
+      setProjects(data || []);
     }
   };
 
@@ -192,12 +216,10 @@ export default function AdminPage() {
     isEdit: boolean,
     currentId?: number,
   ) => {
-    // Ambil semua data siswa dari database
     const { data: allStudents } = await supabase
       .from("students")
       .select("id, role, is_teacher");
 
-    // Cek Wali Kelas (hanya boleh 1)
     if (formData.is_teacher) {
       const existingTeacher = allStudents?.find(
         (s) => s.is_teacher === true && s.id !== currentId,
@@ -208,7 +230,6 @@ export default function AdminPage() {
       }
     }
 
-    // Cek Ketua Kelas (hanya boleh 1)
     if (formData.role === "ketua") {
       const existingKetua = allStudents?.find(
         (s) => s.role === "ketua" && s.id !== currentId,
@@ -219,7 +240,6 @@ export default function AdminPage() {
       }
     }
 
-    // Cek Wakil Ketua (hanya boleh 1)
     if (formData.role === "wakil") {
       const existingWakil = allStudents?.find(
         (s) => s.role === "wakil" && s.id !== currentId,
@@ -230,7 +250,6 @@ export default function AdminPage() {
       }
     }
 
-    // Cek Sekretaris (maksimal 2)
     if (formData.role === "sekretaris1" || formData.role === "sekretaris2") {
       const existingSekretaris =
         allStudents?.filter(
@@ -244,7 +263,6 @@ export default function AdminPage() {
       }
     }
 
-    // Cek Bendahara (maksimal 2)
     if (formData.role === "bendahara1" || formData.role === "bendahara2") {
       const existingBendahara =
         allStudents?.filter(
@@ -263,13 +281,11 @@ export default function AdminPage() {
 
   // CRUD Siswa
   const addStudent = async (student: Omit<Student, "id">) => {
-    // Validasi sebelum tambah
     const isValid = await validateRole(student, false);
     if (!isValid) return false;
 
     const newStudent = { ...student, id: Date.now(), jurusan: "RPL" };
     const { error } = await supabase.from("students").insert([newStudent]);
-
     if (error) {
       alert("Gagal menambah siswa: " + error.message);
       return false;
@@ -279,7 +295,6 @@ export default function AdminPage() {
   };
 
   const updateStudent = async (id: number, updatedData: Partial<Student>) => {
-    // Validasi sebelum update
     const isValid = await validateRole(updatedData, true, id);
     if (!isValid) return false;
 
@@ -287,7 +302,6 @@ export default function AdminPage() {
       .from("students")
       .update({ ...updatedData, jurusan: "RPL" })
       .eq("id", id);
-
     if (error) {
       alert("Gagal update siswa: " + error.message);
       return false;
@@ -309,15 +323,54 @@ export default function AdminPage() {
 
   // CRUD Gallery
   const addGallery = async (item: Omit<GalleryImage, "id">) => {
-    const newItem = { ...item, id: Date.now() };
-    const { error } = await supabase.from("gallery").insert([newItem]);
+    try {
+      const base64Data = item.src.split(",")[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const file = new File([byteArray], `${Date.now()}.jpg`, {
+        type: "image/jpeg",
+      });
 
-    if (error) {
-      alert("Gagal menambah foto: " + error.message);
+      const fileName = `gallery/${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("gallery")
+        .upload(fileName, file);
+
+      if (uploadError) {
+        alert("Gagal upload file ke storage: " + uploadError.message);
+        return false;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("gallery")
+        .getPublicUrl(fileName);
+
+      const newItem = {
+        src: urlData.publicUrl,
+        title: item.title,
+        description: item.description || "",
+        year: item.year,
+        id: Date.now(),
+      };
+
+      const { error: dbError } = await supabase
+        .from("gallery")
+        .insert([newItem]);
+      if (dbError) {
+        alert("Gagal menambah foto: " + dbError.message);
+        return false;
+      }
+      await loadGallery();
+      return true;
+    } catch (err) {
+      console.error("Error adding gallery:", err);
+      alert("Terjadi kesalahan saat menambah foto");
       return false;
     }
-    await loadGallery();
-    return true;
   };
 
   const updateGallery = async (
@@ -351,7 +404,6 @@ export default function AdminPage() {
   const addTimeline = async (item: Omit<TimelineEvent, "id">) => {
     const newItem = { ...item, id: Date.now() };
     const { error } = await supabase.from("timeline").insert([newItem]);
-
     if (error) {
       alert("Gagal menambah event: " + error.message);
       return false;
@@ -402,7 +454,6 @@ export default function AdminPage() {
   // CRUD Songs
   const addSong = async (song: Omit<Song, "id">) => {
     try {
-      // Konversi base64 ke File
       const base64Data = song.url.split(",")[1];
       const byteCharacters = atob(base64Data);
       const byteNumbers = new Array(byteCharacters.length);
@@ -414,7 +465,6 @@ export default function AdminPage() {
         type: "audio/mpeg",
       });
 
-      // Upload ke Supabase Storage (bucket 'music')
       const fileName = `songs/${Date.now()}.mp3`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("music")
@@ -425,12 +475,10 @@ export default function AdminPage() {
         return false;
       }
 
-      // Dapatkan public URL
       const { data: urlData } = supabase.storage
         .from("music")
         .getPublicUrl(fileName);
 
-      // Simpan URL ke database (BUKAN base64)
       const newSong = {
         title: song.title,
         artist: song.artist,
@@ -440,7 +488,6 @@ export default function AdminPage() {
       };
 
       const { error: dbError } = await supabase.from("songs").insert([newSong]);
-
       if (dbError) {
         alert("Gagal menambah lagu ke database: " + dbError.message);
         return false;
@@ -457,10 +504,7 @@ export default function AdminPage() {
   const deleteSong = async (id: number) => {
     if (!confirm("Yakin ingin menghapus lagu ini?")) return false;
 
-    // Cari lagu yang akan dihapus
     const songToDelete = songs.find((s) => s.id === id);
-
-    // Hapus file dari storage jika ada
     if (songToDelete?.url && songToDelete.url.includes("supabase.co")) {
       const urlParts = songToDelete.url.split("/");
       const fileName = `songs/${urlParts[urlParts.length - 1]}`;
@@ -473,6 +517,123 @@ export default function AdminPage() {
       return false;
     }
     await loadSongs();
+    return true;
+  };
+
+  // CRUD Projects
+  const addProject = async (project: Omit<Project, "id">) => {
+    try {
+      const base64Data = project.image_url.split(",")[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const file = new File([byteArray], `${Date.now()}.jpg`, {
+        type: "image/jpeg",
+      });
+
+      const fileName = `projects/${Date.now()}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("projects")
+        .upload(fileName, file);
+
+      if (uploadError) {
+        alert("Gagal upload gambar: " + uploadError.message);
+        return false;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("projects")
+        .getPublicUrl(fileName);
+
+      const newProject = {
+        ...project,
+        image_url: urlData.publicUrl,
+        id: Date.now(),
+        project_link: project.project_link?.trim() || null,
+      };
+
+      const { error: dbError } = await supabase
+        .from("projects")
+        .insert([newProject]);
+      if (dbError) {
+        alert("Gagal menambah projek: " + dbError.message);
+        return false;
+      }
+      await loadProjects();
+      return true;
+    } catch (err) {
+      console.error("Error adding project:", err);
+      alert("Terjadi kesalahan saat menambah projek");
+      return false;
+    }
+  };
+
+  const updateProject = async (id: number, updatedData: Partial<Project>) => {
+    try {
+      let dataToUpdate: Partial<Project> = { ...updatedData };
+
+      // Kalau ada gambar baru (base64), upload dulu ke storage
+      if (updatedData.image_url?.startsWith("data:")) {
+        const base64Data = updatedData.image_url.split(",")[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const file = new File([byteArray], `${Date.now()}.jpg`, {
+          type: "image/jpeg",
+        });
+
+        const fileName = `projects/${Date.now()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from("projects")
+          .upload(fileName, file);
+
+        if (uploadError) {
+          alert("Gagal upload gambar: " + uploadError.message);
+          return false;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("projects")
+          .getPublicUrl(fileName);
+
+        dataToUpdate.image_url = urlData.publicUrl;
+      }
+
+      // project_link boleh null/kosong
+      dataToUpdate.project_link = updatedData.project_link?.trim() || null;
+
+      const { error } = await supabase
+        .from("projects")
+        .update(dataToUpdate)
+        .eq("id", id);
+
+      if (error) {
+        alert("Gagal update projek: " + error.message);
+        return false;
+      }
+      await loadProjects();
+      return true;
+    } catch (err) {
+      console.error("Error updating project:", err);
+      alert("Terjadi kesalahan saat update projek");
+      return false;
+    }
+  };
+
+  const deleteProject = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus projek ini?")) return false;
+    const { error } = await supabase.from("projects").delete().eq("id", id);
+    if (error) {
+      alert("Gagal hapus projek: " + error.message);
+      return false;
+    }
+    await loadProjects();
     return true;
   };
 
@@ -577,6 +738,17 @@ export default function AdminPage() {
           >
             <Music className="w-4 h-4" />
             Musik ({songs.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("projek")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+              activeTab === "projek"
+                ? "bg-white text-black"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <FolderGit2 className="w-4 h-4" />
+            Projek ({projects.length})
           </button>
         </div>
 
@@ -694,46 +866,80 @@ export default function AdminPage() {
                 Belum ada foto galeri
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {gallery.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col gap-3 hover:bg-white/10 transition"
-                  >
-                    <img
-                      src={item.src}
-                      alt={item.title}
-                      className="w-full h-40 object-cover rounded-lg"
-                    />
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold text-white">
-                          {item.title}
+              // Kelompokkan berdasarkan tahun
+              (() => {
+                const groupedByYear: Record<string, GalleryImage[]> = {};
+                gallery.forEach((item) => {
+                  if (!groupedByYear[item.year]) {
+                    groupedByYear[item.year] = [];
+                  }
+                  groupedByYear[item.year].push(item);
+                });
+                const years = Object.keys(groupedByYear).sort();
+
+                return (
+                  <div className="space-y-8">
+                    {years.map((year) => (
+                      <div
+                        key={year}
+                        className="bg-white/5 rounded-xl p-4 border border-white/10"
+                      >
+                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                          <Calendar className="w-5 h-5" />
+                          Tahun {year}
                         </h3>
-                        <p className="text-gray-400 text-sm">{item.date}</p>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {groupedByYear[year].map((item) => (
+                            <div
+                              key={item.id}
+                              className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col gap-3 hover:bg-white/10 transition"
+                            >
+                              <img
+                                src={item.src}
+                                alt={item.title}
+                                className="w-full h-40 object-cover rounded-lg"
+                              />
+                              <div className="flex justify-between items-start gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-white truncate">
+                                    {item.title}
+                                  </h3>
+                                  {item.description && (
+                                    <p className="text-gray-400 text-xs mt-1 line-clamp-2">
+                                      {item.description}
+                                    </p>
+                                  )}
+                                  <p className="text-gray-500 text-xs mt-1">
+                                    {item.year}
+                                  </p>
+                                </div>
+                                <div className="flex gap-1 flex-shrink-0">
+                                  <button
+                                    onClick={() => {
+                                      setModalType("edit");
+                                      setEditingItem(item);
+                                      setShowModal(true);
+                                    }}
+                                    className="p-2 hover:bg-white/10 rounded-lg transition"
+                                  >
+                                    <Edit className="w-4 h-4 text-yellow-400" />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteGallery(item.id)}
+                                    className="p-2 hover:bg-white/10 rounded-lg transition"
+                                  >
+                                    <Trash2 className="w-4 h-4 text-red-400" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => {
-                            setModalType("edit");
-                            setEditingItem(item);
-                            setShowModal(true);
-                          }}
-                          className="p-2 hover:bg-white/10 rounded-lg transition"
-                        >
-                          <Edit className="w-4 h-4 text-yellow-400" />
-                        </button>
-                        <button
-                          onClick={() => deleteGallery(item.id)}
-                          className="p-2 hover:bg-white/10 rounded-lg transition"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-400" />
-                        </button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                );
+              })()
             )}
           </div>
         )}
@@ -924,6 +1130,105 @@ export default function AdminPage() {
             )}
           </div>
         )}
+
+        {/* Projek */}
+        {activeTab === "projek" && (
+          <div>
+            <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+              <h2 className="text-xl font-bold text-white">Manajemen Projek</h2>
+              <button
+                onClick={() => {
+                  setModalType("add");
+                  setEditingItem(null);
+                  setShowModal(true);
+                }}
+                className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+              >
+                <Plus className="w-4 h-4" />
+                Tambah Projek
+              </button>
+            </div>
+
+            {projects.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <FolderGit2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Belum ada projek. Tambah projek pertama!</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {projects.map((project) => (
+                  <div
+                    key={project.id}
+                    className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col gap-3 hover:bg-white/10 transition"
+                  >
+                    <img
+                      src={project.image_url}
+                      alt={project.name}
+                      className="w-full h-40 object-cover rounded-lg"
+                    />
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white truncate">
+                          {project.name}
+                        </h3>
+                        <p className="text-gray-400 text-xs mt-0.5 truncate">
+                          {project.tech_stack}
+                        </p>
+                        <p className="text-gray-500 text-xs mt-0.5">
+                          {project.year} •{" "}
+                          <span
+                            className={
+                              project.status === "selesai"
+                                ? "text-green-400"
+                                : "text-yellow-400"
+                            }
+                          >
+                            {project.status}
+                          </span>
+                        </p>
+                        {/* Link projek — hanya tampil kalau ada */}
+                        {project.project_link ? (
+                          <a
+                            href={project.project_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 hover:underline mt-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Lihat Projek
+                          </a>
+                        ) : (
+                          <span className="inline-block text-xs text-gray-600 mt-1">
+                            Tidak ada link
+                          </span>
+                        )}
+                      </div>
+                      {/* Tombol Edit & Delete */}
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => {
+                            setModalType("edit");
+                            setEditingItem(project);
+                            setShowModal(true);
+                          }}
+                          className="p-2 hover:bg-white/10 rounded-lg transition"
+                        >
+                          <Edit className="w-4 h-4 text-yellow-400" />
+                        </button>
+                        <button
+                          onClick={() => deleteProject(project.id)}
+                          className="p-2 hover:bg-white/10 rounded-lg transition"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-400" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Modal Form */}
@@ -957,6 +1262,12 @@ export default function AdminPage() {
               if (modalType === "add") {
                 success = await addSong(formData);
               }
+            } else if (activeTab === "projek") {
+              if (modalType === "add") {
+                success = await addProject(formData);
+              } else {
+                success = await updateProject(editingItem.id, formData);
+              }
             }
             if (success) {
               setShowModal(false);
@@ -970,7 +1281,7 @@ export default function AdminPage() {
 
 // Modal Form Component
 function ModalForm({ type, data, tab, onClose, onSave }: any) {
-  const [formData, setFormData] = useState(data || {});
+  const [formData, setFormData] = useState(data || { year: "2024" });
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
@@ -984,6 +1295,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Handle audio upload (field "url")
     if (fieldName === "url") {
       if (file.type !== "audio/mpeg") {
         alert("File harus berformat MP3!");
@@ -1003,6 +1315,35 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
       return;
     }
 
+    // Handle gallery image upload (field "src")
+    if (fieldName === "src") {
+      if (file.type.startsWith("image/")) {
+        setUploading(true);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData({ ...formData, [fieldName]: reader.result });
+          setUploading(false);
+        };
+        reader.readAsDataURL(file);
+      }
+      return;
+    }
+
+    // Handle project image upload (field "image_url")
+    if (fieldName === "image_url") {
+      if (file.type.startsWith("image/")) {
+        setUploading(true);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData({ ...formData, [fieldName]: reader.result });
+          setUploading(false);
+        };
+        reader.readAsDataURL(file);
+      }
+      return;
+    }
+
+    // Handle profile photo upload (field "photo") — buka crop modal
     if (file.type.startsWith("image/")) {
       setUploading(true);
       const reader = new FileReader();
@@ -1037,7 +1378,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
         label: "AKA (As Known As)",
         type: "text",
         required: false,
-        placeholder: "Contoh: Si Cerdas, The Master",
+        placeholder: "Contoh: Sam, Dave",
       },
       {
         name: "photo",
@@ -1066,7 +1407,6 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
         ],
         default: "siswa",
       },
-      // 👇 TARUH DI SINI (setelah role, sebelum hobby)
       {
         name: "gender",
         label: "Jenis Kelamin",
@@ -1081,7 +1421,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
       { name: "dream", label: "Cita-cita", type: "text", required: true },
       {
         name: "quote",
-        label: "Quote Pribadi",
+        label: "Quote/Kata-Kata",
         type: "textarea",
         required: true,
       },
@@ -1094,7 +1434,26 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
         required: type === "add",
       },
       { name: "title", label: "Judul", type: "text", required: true },
-      { name: "date", label: "Tanggal", type: "text", required: true },
+      {
+        name: "description",
+        label: "Deskripsi (opsional)",
+        type: "textarea",
+        required: false,
+        placeholder: "Cerita singkat tentang foto ini...",
+      },
+      {
+        name: "year",
+        label: "Tahun",
+        type: "select",
+        options: [
+          { value: "2024", label: "2024" },
+          { value: "2025", label: "2025" },
+          { value: "2026", label: "2026" },
+          { value: "2027", label: "2027" },
+        ],
+        default: "2024",
+        required: true,
+      },
     ],
     timeline: [
       { name: "year", label: "Tahun", type: "text", required: true },
@@ -1131,6 +1490,59 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
         accept: "audio/mpeg",
       },
     ],
+    projek: [
+      {
+        name: "image_url",
+        label: "Gambar Projek",
+        type: "file",
+        required: type === "add",
+      },
+      {
+        name: "name",
+        label: "Nama Projek",
+        type: "text",
+        required: true,
+        placeholder: "Contoh: Perpustakaan Online",
+      },
+      {
+        name: "description",
+        label: "Deskripsi",
+        type: "textarea",
+        required: true,
+        placeholder: "Deskripsi Projek",
+      },
+      {
+        name: "tech_stack",
+        label: "Tech Stack",
+        type: "text",
+        required: true,
+        placeholder: "Contoh: Laravel, Tailwind",
+      },
+      {
+        name: "project_link",
+        label: "Link Projek (opsional)",
+        type: "text",
+        required: false,
+        placeholder: "https://...",
+      },
+      {
+        name: "year",
+        label: "Tahun",
+        type: "text",
+        required: true,
+        placeholder: "2025",
+      },
+      {
+        name: "status",
+        label: "Status",
+        type: "select",
+        options: [
+          { value: "selesai", label: "Selesai" },
+          { value: "ongoing", label: "Ongoing" },
+        ],
+        default: "selesai",
+      },
+    ],
   };
 
   const currentFields = fields[tab];
@@ -1149,7 +1561,9 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                 ? "Galeri"
                 : tab === "timeline"
                   ? "Timeline"
-                  : "Musik"}
+                  : tab === "musik"
+                    ? "Musik"
+                    : "Projek"}
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
             <X className="w-5 h-5" />
@@ -1188,6 +1602,18 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                   {formData[field.name] &&
                     !uploading &&
                     field.name === "src" && (
+                      <div className="mt-2">
+                        <img
+                          src={formData[field.name]}
+                          alt="Preview"
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
+
+                  {formData[field.name] &&
+                    !uploading &&
+                    field.name === "image_url" && (
                       <div className="mt-2">
                         <img
                           src={formData[field.name]}
@@ -1244,7 +1670,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                 </div>
               ) : field.type === "select" ? (
                 <select
-                  value={formData[field.name] || field.default || "siswa"}
+                  value={formData[field.name] || field.default || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, [field.name]: e.target.value })
                   }

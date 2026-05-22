@@ -26,7 +26,7 @@ const Footer = () => {
             "Bukan akhir dari segalanya, tapi awal dari kenangan yang akan terus hidup."
           </p>
           <p className="text-gray-500 mt-2 text-sm">
-            — Nexuz Unity, 2024 — 2027
+            Nexuz Unity
           </p>
         </motion.div>
 
