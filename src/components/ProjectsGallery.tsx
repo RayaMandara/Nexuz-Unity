@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { ExternalLink, Code, Calendar, CheckCircle, Clock } from "lucide-react";
+import { ProjectSkeleton } from "@/components/Skeleton";
 
 interface Project {
   id: number;
@@ -61,15 +62,21 @@ const ProjectsGallery = () => {
     ? projects 
     : projects.filter(p => p.status === filter);
 
-  if (loading) {
-    return (
-      <section id="projek" className="py-24 px-6 bg-black">
-        <div className="container mx-auto max-w-7xl text-center">
-          <div className="text-gray-400">Loading projects...</div>
+if (loading) {
+  return (
+    <section id="projects" className="py-24 px-6 bg-black">
+      <div className="container mx-auto max-w-7xl">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+            Project Gallery
+          </h2>
+          <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
         </div>
-      </section>
-    );
-  }
+        <ProjectSkeleton />
+      </div>
+    </section>
+  );
+}
 
   return (
     <section id="projek" className="py-24 px-6 bg-black">

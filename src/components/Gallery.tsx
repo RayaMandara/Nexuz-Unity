@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import Lightbox from "./Lightbox";
 import { Image as ImageIcon, Calendar } from "lucide-react";
+import { GallerySkeleton } from "@/components/Skeleton";
 
 interface GalleryImage {
   id: number;
@@ -87,15 +88,27 @@ const Gallery = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <section id="galeri" className="py-24 px-6 bg-black">
-        <div className="container mx-auto max-w-7xl text-center">
-          <div className="text-gray-400">Loading galeri...</div>
+
+
+// Di dalam return, ganti loading state:
+if (loading) {
+  return (
+    <section id="galeri" className="py-24 px-6 bg-black">
+      <div className="container mx-auto max-w-7xl">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+            Galeri Foto
+          </h2>
+          <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
+          <p className="text-gray-400 max-w-2xl mx-auto">
+            Momen-momen berharga yang telah kita lalui bersama
+          </p>
         </div>
-      </section>
-    );
-  }
+        <GallerySkeleton />
+      </div>
+    </section>
+  );
+}
 
   return (
     <section id="galeri" className="py-24 px-6 bg-black">

@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import StudentCard from "./StudentCard";
 import StudentModal from "./StudentModal";
 import { Crown, Users, UsersRound } from "lucide-react";
+import { CardSkeleton } from "@/components/Skeleton";
 
 interface Student {
   id: number;
@@ -71,15 +72,26 @@ const StudentList = () => {
     setTimeout(() => setSelectedStudent(null), 300);
   };
 
-  if (loading) {
-    return (
-      <section id="siswa" className="py-24 px-6 bg-black">
-        <div className="container mx-auto max-w-7xl text-center">
-          <div className="text-gray-400">Loading...</div>
+
+if (loading) {
+  return (
+    <section id="siswa" className="py-24 px-6 bg-black">
+      <div className="container mx-auto max-w-7xl">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+            Keluarga Nexuz
+          </h2>
+          <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
         </div>
-      </section>
-    );
-  }
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          {[...Array(10)].map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
   return (
     <section id="siswa" className="py-24 px-4 md:px-6 bg-black">
