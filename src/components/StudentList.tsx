@@ -7,6 +7,7 @@ import StudentCard from "./StudentCard";
 import StudentModal from "./StudentModal";
 import { Crown, Users, UsersRound } from "lucide-react";
 import { CardSkeleton } from "@/components/Skeleton";
+import FlyingEmoji from "./FlyingEmoji";
 
 interface Student {
   id: number;
@@ -23,6 +24,14 @@ interface Student {
   gender?: string;
   image_position_x?: number;
   image_position_y?: number;
+  enable_sad_emoji?: boolean;
+}
+
+interface FlyingEmojiType {
+  id: number;
+  emoji: string;
+  x: number;
+  y: number;
 }
 
 const StudentList = () => {
@@ -33,10 +42,25 @@ const StudentList = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [flyingEmojis, setFlyingEmojis] = useState<FlyingEmojiType[]>([]);
+  const [isGrayscale, setIsGrayscale] = useState(false); // ← TAMBAHKAN
+
+  const sadEmojis = ["🕊️", "🥀"];
 
   useEffect(() => {
     fetchStudents();
   }, []);
+
+  // Efek grayscale ke seluruh halaman
+  useEffect(() => {
+    if (isGrayscale) {
+      document.documentElement.style.filter = "grayscale(100%)";
+      document.documentElement.style.transition = "filter 0.8s ease";
+    } else {
+      document.documentElement.style.filter = "grayscale(0%)";
+      document.documentElement.style.transition = "filter 0.8s ease";
+    }
+  }, [isGrayscale]);
 
   const fetchStudents = async () => {
     const { data, error } = await supabase
@@ -50,7 +74,6 @@ const StudentList = () => {
       const teacherData = data?.find(s => s.is_teacher === true) || null;
       const studentsData = data?.filter(s => s.is_teacher !== true) || [];
       
-      // Pisahkan berdasarkan gender
       const males = studentsData.filter(s => s.gender === 'L' || !s.gender);
       const females = studentsData.filter(s => s.gender === 'P');
       
@@ -65,33 +88,62 @@ const StudentList = () => {
   const handleStudentClick = (student: Student) => {
     setSelectedStudent(student);
     setIsModalOpen(true);
+    
+    if (student.enable_sad_emoji) {
+      setIsGrayscale(true); // ← Aktifkan grayscale
+      spawnFlyingEmojis();
+    }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsGrayscale(false); // ← Matikan grayscale
     setTimeout(() => setSelectedStudent(null), 300);
   };
 
+  const spawnFlyingEmojis = () => {
+    const emojiCount = 10;
+    const newEmojis: FlyingEmojiType[] = [];
+    
+    for (let i = 0; i < emojiCount; i++) {
+      const randomEmoji = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
+      const x = 50 + Math.random() * (window.innerWidth - 100);
+      const y = 50 + Math.random() * (window.innerHeight * 0.5);
+      
+      newEmojis.push({
+        id: Date.now() + i + Math.random(),
+        emoji: randomEmoji,
+        x,
+        y,
+      });
+    }
+    
+    setFlyingEmojis(prev => [...prev, ...newEmojis]);
+  };
 
-if (loading) {
-  return (
-    <section id="siswa" className="py-24 px-6 bg-black">
-      <div className="container mx-auto max-w-7xl">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-            Keluarga Nexuz
-          </h2>
-          <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
+  const removeFlyingEmoji = (id: number) => {
+    setFlyingEmojis(prev => prev.filter(e => e.id !== id));
+  };
+
+  if (loading) {
+    return (
+      <section id="siswa" className="py-24 px-6 bg-black">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+              Keluarga Nexuz
+            </h2>
+            <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            {[...Array(10)].map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-          {[...Array(10)].map((_, i) => (
-            <CardSkeleton key={i} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+      </section>
+    );
+  }
 
   return (
     <section id="siswa" className="py-24 px-4 md:px-6 bg-black">
@@ -190,6 +242,17 @@ if (loading) {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
         />
+
+        {/* Flying Emojis */}
+        {flyingEmojis.map((item) => (
+          <FlyingEmoji
+            key={item.id}
+            emoji={item.emoji}
+            x={item.x}
+            y={item.y}
+            onComplete={() => removeFlyingEmoji(item.id)}
+          />
+        ))}
       </div>
     </section>
   );

@@ -37,6 +37,7 @@ interface Student {
   is_teacher?: boolean;
   role?: string;
   gender?: string;
+  enable_sad_emoji?: boolean;
 }
 
 interface GalleryImage {
@@ -1389,6 +1390,12 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
       {
         name: "is_teacher",
         label: "Wali Kelas",
+        type: "checkbox",
+        default: false,
+      },
+      {
+        name: "enable_sad_emoji",
+        label: "Aktifkan Emoji Burung 🕊️",
         type: "checkbox",
         default: false,
       },
