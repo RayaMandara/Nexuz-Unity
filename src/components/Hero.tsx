@@ -32,6 +32,17 @@ const Hero = () => {
             NEXUZ
           </motion.h1>
 
+          {/* Gambar Aksara Bali */}
+<motion.img
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5, delay: 0.3 }}
+  src="/aksara-bali.png"
+  alt="Aksara Bali - Nexuz"
+  className="h-20 md:h-28 mx-auto mb-4"
+  loading="lazy"
+/>
+
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -66,7 +77,7 @@ const Hero = () => {
               }}
               className="px-8 py-3 border border-white rounded-full font-semibold hover:bg-white/10 transition-all hover:scale-105 cursor-pointer"
             >
-              Lihat Timeline
+              Lihat Lini Waktu
             </button>
           </motion.div>
         </motion.div>

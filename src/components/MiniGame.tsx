@@ -262,10 +262,10 @@ const MiniGame = () => {
           className="text-center mb-8"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-            Mini Game
+            Permainan
           </h2>
           <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
-          <p className="text-gray-400">Tebak teman sekelas dari foto blur!</p>
+          <p className="text-gray-400">Tebak teman sekelas dari foto buram!</p>
         </motion.div>
 
         <motion.div
@@ -276,12 +276,12 @@ const MiniGame = () => {
           <div className="flex items-center gap-3">
             <Trophy className="w-5 h-5 text-yellow-400" />
             <div>
-              <p className="text-gray-400 text-xs">High Score</p>
+              <p className="text-gray-400 text-xs">Skor Tertinggi</p>
               <p className="text-white font-bold text-xl">{highScore}</p>
             </div>
           </div>
           <div className="text-center">
-            <p className="text-gray-400 text-xs">Round</p>
+            <p className="text-gray-400 text-xs">Ronde</p>
             <p className="text-white font-bold text-xl">
               {round}/{TOTAL_ROUNDS}
             </p>
@@ -289,7 +289,7 @@ const MiniGame = () => {
           <div className="flex items-center gap-3">
             <Star className="w-5 h-5 text-yellow-400" />
             <div>
-              <p className="text-gray-400 text-xs">Score</p>
+              <p className="text-gray-400 text-xs">Skor</p>
               <p className="text-white font-bold text-xl">{score}</p>
             </div>
           </div>
@@ -323,13 +323,13 @@ const MiniGame = () => {
                   </motion.div>
                 )}
                 <p className="mt-4 text-sm font-semibold">
-                  <span>Level : </span> 
+                  <span>Tingkatan : </span> 
                   {blurLevel <= 4 ? (
-                    <span className="text-green-400">Easy</span>
+                    <span className="text-green-400">Mudah</span>
                   ) : blurLevel <= 8 ? (
-                    <span className="text-yellow-400">Medium</span>
+                    <span className="text-yellow-400">Sedang</span>
                   ) : (
-                    <span className="text-red-400">Hard</span>
+                    <span className="text-red-400">Sulit</span>
                   )}
                 </p>
               </div>
@@ -376,7 +376,7 @@ const MiniGame = () => {
               className="text-center"
             >
               <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-2">Game Over!</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Permaianan Berakhir!</h3>
               <p className="text-gray-400 mb-2">Skor akhir kamu: {score}</p>
               {score === highScore && score > 0 && (
                 <p className="text-yellow-400 mb-4">
