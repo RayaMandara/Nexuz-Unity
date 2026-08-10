@@ -302,7 +302,7 @@ const MiniGame = () => {
         >
           {!gameOver ? (
             <>
-              <div className="relative mb-8">
+              <div className="relative mb-8 ">
                 {currentStudent && (
                   <motion.div
                     key={currentStudent.id}
@@ -334,7 +334,7 @@ const MiniGame = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="grid grid-cols-2 gap-3 mb-6 notranslate ">
                 {options.map((option, index) => (
                   <motion.button
                     key={index}

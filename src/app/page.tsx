@@ -11,10 +11,12 @@ import MusicPlayer from "@/components/MusicPlayer";
 import MiniGame from "@/components/MiniGame";
 import Footer from "@/components/Footer";
 import ProjectsGallery from "@/components/ProjectsGallery";
+import GoogleTranslate from "@/components/GoogleTranslate";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-black">
+      <GoogleTranslate />
       <FloatingMenu />
       <Hero />
       <ClassProfile />

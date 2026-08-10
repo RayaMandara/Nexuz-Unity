@@ -179,7 +179,7 @@ const MemoryBook = () => {
                   transition={{ delay: index * 0.05 }}
                   className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-white/20 transition-all"
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3 notranslate ">
                     <img
                       src={memory.avatar}
                       alt={memory.name}

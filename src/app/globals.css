@@ -40,3 +40,42 @@ body {
 * {
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
+
+/* translate button */
+/* Sembunyikan SEMUA elemen visual Google kecuali select itu sendiri */
+#google_translate_element .goog-te-gadget-icon,
+#google_translate_element .goog-te-gadget-simple > span:first-child,
+#google_translate_element img,
+#google_translate_element a.goog-logo-link,
+#google_translate_element .goog-te-menu-value span,
+.goog-te-banner-frame,
+.skiptranslate iframe {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Pastikan select ada di atas dan bisa diklik */
+#google_translate_element {
+  position: relative;
+    /* background-color: black !important;   */
+  z-index: 1;
+}
+
+#google_translate_element select.goog-te-combo {
+  position: relative;
+  z-index: 999 !important;
+  pointer-events: auto !important;
+  appearance: none;
+  -webkit-appearance: none;
+  /* background-color: black !important; */
+  border: none !important;
+  outline: none !important;
+  color: #d1d5db;
+  font-size: 12px;
+  padding: 2px 14px 2px 2px;
+  cursor: pointer;
+}
+
+body { top: 0 !important; }

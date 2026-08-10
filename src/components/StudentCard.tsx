@@ -61,7 +61,7 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
       onClick={onClick}
       className="group cursor-pointer relative"
     >
-      <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 backdrop-blur-sm">
+      <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 backdrop-blur-sm notranslate ">
         <div className="relative overflow-hidden h-48 sm:h-52 md:h-56 bg-black/20">
           {/* Badge Emoji Burung */}
           {student.enable_sad_emoji && (
