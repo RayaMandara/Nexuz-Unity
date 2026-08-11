@@ -43,7 +43,7 @@ const StudentList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [flyingEmojis, setFlyingEmojis] = useState<FlyingEmojiType[]>([]);
-  const [isGrayscale, setIsGrayscale] = useState(false); // ← TAMBAHKAN
+  const [isGrayscale, setIsGrayscale] = useState(false);
 
   const sadEmojis = ["🕊️", "🥀"];
 

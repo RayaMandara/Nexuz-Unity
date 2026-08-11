@@ -12,6 +12,8 @@ import MiniGame from "@/components/MiniGame";
 import Footer from "@/components/Footer";
 import ProjectsGallery from "@/components/ProjectsGallery";
 import GoogleTranslate from "@/components/GoogleTranslate";
+import GamesGallery from "@/components/GamesGallery"; 
+
 
 export default function Home() {
   return (
@@ -24,6 +26,7 @@ export default function Home() {
       <Gallery />
       <Timeline />
       <ProjectsGallery />
+      <GamesGallery />
       <div id="music" className="relative py-16">
         <MusicPlayer />
       </div>

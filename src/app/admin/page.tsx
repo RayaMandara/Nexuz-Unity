@@ -18,6 +18,7 @@ import {
   FolderGit2,
   ExternalLink,
   Calendar,
+  Gamepad2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import ImageCropper from "@/components/ImageCropper";
@@ -85,6 +86,15 @@ interface Project {
   status: string;
 }
 
+// --- UBAH DISINI: Update Interface Game ---
+interface Game {
+  id: number;
+  title: string;
+  description: string;
+  image_url: string; // Tambah field gambar
+  game_url: string;
+}
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,6 +107,7 @@ export default function AdminPage() {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [songs, setSongs] = useState<Song[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
 
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -135,6 +146,7 @@ export default function AdminPage() {
       loadMemories(),
       loadSongs(),
       loadProjects(),
+      loadGames(),
     ]);
     setIsRefreshing(false);
   };
@@ -208,6 +220,18 @@ export default function AdminPage() {
       console.error("Error loading projects:", error);
     } else {
       setProjects(data || []);
+    }
+  };
+
+  const loadGames = async () => {
+    const { data, error } = await supabase
+      .from("games")
+      .select("*")
+      .order("id", { ascending: false });
+    if (error) {
+      console.error("Error loading games:", error);
+    } else {
+      setGames(data || []);
     }
   };
 
@@ -638,6 +662,127 @@ export default function AdminPage() {
     return true;
   };
 
+  // --- UBAH DISINI: CRUD GAMES DENGAN GAMBAR ---
+  const addGame = async (game: Omit<Game, "id">) => {
+    try {
+      let imageUrl = game.image_url; // Default dari input (bisa URL string atau base64)
+
+      // Jika gambar berupa base64 (upload file baru), upload ke storage dulu
+      if (imageUrl?.startsWith("data:")) {
+        const base64Data = imageUrl.split(",")[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const file = new File([byteArray], `${Date.now()}.jpg`, {
+          type: "image/jpeg",
+        });
+
+        // Pastikan bucket 'games' sudah ada di Supabase Storage
+        const fileName = `games/${Date.now()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from("games") 
+          .upload(fileName, file);
+
+        if (uploadError) {
+          alert("Gagal upload gambar game: " + uploadError.message);
+          return false;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("games")
+          .getPublicUrl(fileName);
+
+        imageUrl = urlData.publicUrl;
+      }
+
+      const newGame = {
+        title: game.title,
+        description: game.description,
+        image_url: imageUrl,
+        game_url: game.game_url,
+        id: Date.now(),
+      };
+
+      const { error: dbError } = await supabase.from("games").insert([newGame]);
+      if (dbError) {
+        alert("Gagal menambah game: " + dbError.message);
+        return false;
+      }
+      await loadGames();
+      return true;
+    } catch (err) {
+      console.error("Error adding game:", err);
+      alert("Terjadi kesalahan saat menambah game");
+      return false;
+    }
+  };
+
+  const updateGame = async (id: number, updatedData: Partial<Game>) => {
+    try {
+      let dataToUpdate: Partial<Game> = { ...updatedData };
+
+      // Kalau ada gambar base64 baru, upload dulu
+      if (updatedData.image_url?.startsWith("data:")) {
+        const base64Data = updatedData.image_url.split(",")[1];
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const file = new File([byteArray], `${Date.now()}.jpg`, {
+          type: "image/jpeg",
+        });
+
+        const fileName = `games/${Date.now()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from("games")
+          .upload(fileName, file);
+
+        if (uploadError) {
+          alert("Gagal upload gambar: " + uploadError.message);
+          return false;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("games")
+          .getPublicUrl(fileName);
+
+        dataToUpdate.image_url = urlData.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from("games")
+        .update(dataToUpdate)
+        .eq("id", id);
+
+      if (error) {
+        alert("Gagal update game: " + error.message);
+        return false;
+      }
+      await loadGames();
+      return true;
+    } catch (err) {
+      console.error("Error updating game:", err);
+      alert("Terjadi kesalahan saat update game");
+      return false;
+    }
+  };
+
+  const deleteGame = async (id: number) => {
+    if (!confirm("Yakin ingin menghapus game ini?")) return false;
+    const { error } = await supabase.from("games").delete().eq("id", id);
+    if (error) {
+      alert("Gagal hapus game: " + error.message);
+      return false;
+    }
+    await loadGames();
+    return true;
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("nexuz_admin_auth");
     localStorage.removeItem("nexuz_admin_login_time");
@@ -750,6 +895,17 @@ export default function AdminPage() {
           >
             <FolderGit2 className="w-4 h-4" />
             Projek ({projects.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("games")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+              activeTab === "games"
+                ? "bg-white text-black"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <Gamepad2 className="w-4 h-4" />
+            Games ({games.length})
           </button>
         </div>
 
@@ -1187,7 +1343,6 @@ export default function AdminPage() {
                             {project.status}
                           </span>
                         </p>
-                        {/* Link projek — hanya tampil kalau ada */}
                         {project.project_link ? (
                           <a
                             href={project.project_link}
@@ -1204,7 +1359,6 @@ export default function AdminPage() {
                           </span>
                         )}
                       </div>
-                      {/* Tombol Edit & Delete */}
                       <div className="flex gap-1 flex-shrink-0">
                         <button
                           onClick={() => {
@@ -1218,6 +1372,96 @@ export default function AdminPage() {
                         </button>
                         <button
                           onClick={() => deleteProject(project.id)}
+                          className="p-2 hover:bg-white/10 rounded-lg transition"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-400" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* --- UBAH DISINI: UI GAMES --- */}
+        {activeTab === "games" && (
+          <div>
+            <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+              <h2 className="text-xl font-bold text-white">Manajemen Games</h2>
+              <button
+                onClick={() => {
+                  setModalType("add");
+                  setEditingItem(null);
+                  setShowModal(true);
+                }}
+                className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-200 transition"
+              >
+                <Plus className="w-4 h-4" />
+                Tambah Game
+              </button>
+            </div>
+
+            {games.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <Gamepad2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Belum ada game. Tambah game pertama!</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {games.map((game) => (
+                  <div
+                    key={game.id}
+                    className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col gap-3 hover:bg-white/10 transition"
+                  >
+                    {/* Tampilkan Gambar Game */}
+                    <img
+                      src={game.image_url || "https://via.placeholder.com/400x200?text=No+Image"} // Placeholder jika tidak ada gambar
+                      alt={game.title}
+                      className="w-full h-40 object-cover rounded-lg bg-black"
+                    />
+                    
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white truncate">
+                          {game.title}
+                        </h3>
+                        <p className="text-gray-400 text-xs mt-1 line-clamp-2">
+                          {game.description}
+                        </p>
+                        
+                        {game.game_url ? (
+                          <a
+                            href={game.game_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 hover:underline mt-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Mainkan Game
+                          </a>
+                        ) : (
+                          <span className="inline-block text-xs text-gray-600 mt-1">
+                            Tidak ada link
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Tombol Edit & Delete */}
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => {
+                            setModalType("edit");
+                            setEditingItem(game);
+                            setShowModal(true);
+                          }}
+                          className="p-2 hover:bg-white/10 rounded-lg transition"
+                        >
+                          <Edit className="w-4 h-4 text-yellow-400" />
+                        </button>
+                        <button
+                          onClick={() => deleteGame(game.id)}
                           className="p-2 hover:bg-white/10 rounded-lg transition"
                         >
                           <Trash2 className="w-4 h-4 text-red-400" />
@@ -1269,6 +1513,12 @@ export default function AdminPage() {
               } else {
                 success = await updateProject(editingItem.id, formData);
               }
+            } else if (activeTab === "games") {
+              if (modalType === "add") {
+                success = await addGame(formData);
+              } else {
+                success = await updateGame(editingItem.id, formData);
+              }
             }
             if (success) {
               setShowModal(false);
@@ -1282,7 +1532,7 @@ export default function AdminPage() {
 
 // Modal Form Component
 function ModalForm({ type, data, tab, onClose, onSave }: any) {
-  const [formData, setFormData] = useState(data || { year: "2024" });
+  const [formData, setFormData] = useState(data || {});
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
@@ -1395,7 +1645,7 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
       },
       {
         name: "enable_sad_emoji",
-        label: "Aktifkan Emoji Burung 🕊️",
+        label: "🕊️",
         type: "checkbox",
         default: false,
       },
@@ -1550,6 +1800,36 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
         default: "selesai",
       },
     ],
+    // --- UBAH DISINI: FIELD MODAL GAMES ---
+    games: [
+      {
+        name: "image_url",
+        label: "Gambar Game",
+        type: "file",
+        required: type === "add", // Wajib upload saat tambah, opsional saat edit
+      },
+      {
+        name: "title",
+        label: "Judul Game",
+        type: "text",
+        required: true,
+        placeholder: "Contoh: Nexuz Quiz",
+      },
+      {
+        name: "description",
+        label: "Deskripsi",
+        type: "textarea",
+        required: true,
+        placeholder: "Jelaskan game ini...",
+      },
+      {
+        name: "game_url",
+        label: "Link Game",
+        type: "text",
+        required: true,
+        placeholder: "https://...",
+      },
+    ],
   };
 
   const currentFields = fields[tab];
@@ -1570,7 +1850,9 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                   ? "Timeline"
                   : tab === "musik"
                     ? "Musik"
-                    : "Projek"}
+                    : tab === "projek"
+                    ? "Projek"
+                    : "Game"}
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-white">
             <X className="w-5 h-5" />
@@ -1606,29 +1888,16 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
                         : "Pilih File"}
                   </button>
 
-                  {formData[field.name] &&
-                    !uploading &&
-                    field.name === "src" && (
-                      <div className="mt-2">
-                        <img
-                          src={formData[field.name]}
-                          alt="Preview"
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                      </div>
-                    )}
-
-                  {formData[field.name] &&
-                    !uploading &&
-                    field.name === "image_url" && (
-                      <div className="mt-2">
-                        <img
-                          src={formData[field.name]}
-                          alt="Preview"
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                      </div>
-                    )}
+                  {(formData[field.name] && !uploading && field.name === "src") ||
+                   (formData[field.name] && !uploading && field.name === "image_url") ? (
+                    <div className="mt-2">
+                      <img
+                        src={formData[field.name]}
+                        alt="Preview"
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                    </div>
+                  ) : null}
 
                   {formData[field.name] &&
                     !uploading &&

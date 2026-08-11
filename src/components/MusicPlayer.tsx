@@ -258,7 +258,7 @@ const MusicPlayer = () => {
             animate={{ x: 0, opacity: 1, scale: 1 }}
             exit={{ x: -100, opacity: 0, scale: 0.9 }}
             transition={{ type: "spring", damping: 25 }}
-            className="fixed bottom-6 left-6 z-50 bg-black/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-4 w-80"
+            className="notranslate fixed bottom-6 left-6 z-50 bg-black/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-4 w-80"
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-3">

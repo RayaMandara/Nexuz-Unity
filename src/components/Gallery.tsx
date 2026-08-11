@@ -249,7 +249,7 @@ const GalleryCard = ({
         </div>
 
         <div className="p-4">
-          <h3 className="text-white font-semibold">{image.title}</h3>
+          <h3 className="text-white font-semibold notranslate">{image.title}</h3>
           {image.description && (
             <p className="text-gray-400 text-sm mt-1 line-clamp-2">
               {image.description}

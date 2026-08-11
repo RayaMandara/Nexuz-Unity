@@ -207,7 +207,7 @@ const ClassProfile = () => {
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <stat.icon className="w-6 h-6 text-white" />
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-white mb-1">
+              <div className="text-3xl md:text-4xl font-bold text-white mb-1 notranslate">
                 {stat.value !== null ? (
                   <CountUp end={stat.value} suffix={stat.suffix} />
                 ) : (

@@ -63,6 +63,11 @@ body {
   z-index: 1;
 }
 
+/* Support Aksara Bali */
+.translate-micro .goog-te-combo option[value="ban"] {
+  font-family: 'Noto Sans Balinese', sans-serif;
+}
+
 #google_translate_element select.goog-te-combo {
   position: relative;
   z-index: 999 !important;

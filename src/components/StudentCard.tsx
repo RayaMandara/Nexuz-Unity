@@ -57,7 +57,7 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
       viewport={{ once: false, margin: "-100px" }}
-      whileHover={{ y: -5, scale: 1.02 }}
+      // whileHover={{ y: -5, scale: 1.02 }}
       onClick={onClick}
       className="group cursor-pointer relative"
     >
@@ -65,7 +65,7 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
         <div className="relative overflow-hidden h-48 sm:h-52 md:h-56 bg-black/20">
           {/* Badge Emoji Burung */}
           {student.enable_sad_emoji && (
-            <div className="absolute top-2 right-2 z-20 w-8 h-8 bg-black/60 backdrop-blur rounded-full flex items-center justify-center text-lg animate-pulse">
+            <div className="absolute top-2 right-2 z-20 w-8 h-8 bg-black/60 backdrop-blur rounded-full flex items-center justify-center text-lg">
               🕊️
             </div>
           )}

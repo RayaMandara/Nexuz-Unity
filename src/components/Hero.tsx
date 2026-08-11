@@ -14,7 +14,6 @@ const Hero = () => {
         backgroundAttachment: "fixed",
       }}
     >
-      {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/65" />
 
       <div className="relative z-10 text-center px-6">
@@ -27,21 +26,20 @@ const Hero = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-7xl md:text-8xl font-bold tracking-tighter mb-6 text-white drop-shadow-2xl"
+            className="text-7xl md:text-8xl font-bold tracking-tighter mb-6 text-white drop-shadow-2xl notranslate"
           >
             NEXUZ
           </motion.h1>
 
-          {/* Gambar Aksara Bali */}
-<motion.img
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.5, delay: 0.3 }}
-  src="/aksara-bali.png"
-  alt="Aksara Bali - Nexuz"
-  className="h-20 md:h-28 mx-auto mb-4"
-  loading="lazy"
-/>
+          <motion.img
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            src="/aksara-bali.png"
+            alt="Aksara Bali - Nexuz"
+            className="h-20 md:h-28 mx-auto mb-4 notranslate"
+            loading="lazy"
+          />
 
           <motion.p
             initial={{ opacity: 0 }}
@@ -49,8 +47,7 @@ const Hero = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-xl md:text-2xl text-gray-200 mb-8 max-w-2xl mx-auto"
           >
-            Lebih dari sekadar kelas. Ini adalah keluarga, perjalanan, dan
-            kenangan yang akan terus hidup.
+            Lebih dari sekadar kelas. Ini adalah keluarga, perjalanan, dan kenangan yang akan terus hidup.
           </motion.p>
 
           <motion.div
