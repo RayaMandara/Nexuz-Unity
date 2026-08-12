@@ -86,23 +86,25 @@ const Lightbox = ({
                 alt={currentImage.title}
                 className="max-w-full max-h-[85vh] object-contain rounded-lg"
               />
-              
+
               {/* Info */}
-{/* Info - tambahkan description */}
-<div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-  <div className="text-center">
-    <h3 className="text-white text-xl font-semibold mb-1">
-      {currentImage.title}
-    </h3>
-    {currentImage.description && (
-      <p className="text-gray-300 text-sm mb-2">{currentImage.description}</p>
-    )}
-    <p className="text-gray-400 text-xs">{currentImage.year}</p>
-    <p className="text-gray-500 text-xs mt-2">
-      {currentIndex + 1} / {images.length}
-    </p>
-  </div>
-</div>
+              {/* Info - tambahkan description */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                <div className="text-center">
+                  <h3 className="text-white text-xl font-semibold mb-1">
+                    {currentImage.title}
+                  </h3>
+                  {currentImage.description && (
+                    <p className="text-gray-300 text-sm mb-2">
+                      {currentImage.description}
+                    </p>
+                  )}
+                  <p className="text-gray-400 text-xs">{currentImage.year}</p>
+                  <p className="text-gray-500 text-xs mt-2">
+                    {currentIndex + 1} / {images.length}
+                  </p>
+                </div>
+              </div>
             </div>
           </motion.div>
         </>

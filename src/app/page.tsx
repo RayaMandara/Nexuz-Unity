@@ -11,14 +11,15 @@ import MusicPlayer from "@/components/MusicPlayer";
 import MiniGame from "@/components/MiniGame";
 import Footer from "@/components/Footer";
 import ProjectsGallery from "@/components/ProjectsGallery";
-import GoogleTranslate from "@/components/GoogleTranslate";
+// import GoogleTranslate from "@/components/GoogleTranslate";
 import GamesGallery from "@/components/GamesGallery"; 
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-black">
-      <GoogleTranslate />
+      <LanguageSwitcher />
       <FloatingMenu />
       <Hero />
       <ClassProfile />

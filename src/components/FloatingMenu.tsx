@@ -17,10 +17,11 @@ import {
   FolderGit2,
   GraduationCap,
 } from "lucide-react";
-
+import { useLanguage } from "../context/LanguageContext";
 import { expandMusicPlayer } from "./MusicPlayer";
 
 const FloatingMenu = () => {
+  const { t, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
@@ -36,13 +37,13 @@ const FloatingMenu = () => {
   }, []);
 
   const menuItems = [
-    { name: "Beranda", icon: Home, href: "#home" },
-    { name: "Profil", icon: GraduationCap, href: "#profil" },
-    { name: "Siswa", icon: Users, href: "#siswa" },
-    { name: "Galeri", icon: Image, href: "#galeri" },
-    { name: "Timeline", icon: Clock, href: "#timeline" },
-    { name: "Projek", icon: FolderGit2, href: "#projek" },
-    { name: "Game", icon: Gamepad2, href: "#game" },
+    { name: t("nav_home") || "Beranda", icon: Home, href: "#home" },
+    { name: t("nav_profile") || "Profil", icon: GraduationCap, href: "#profil" },
+    { name: t("nav_students") || "Siswa", icon: Users, href: "#siswa" },
+    { name: t("nav_gallery") || "Galeri", icon: Image, href: "#galeri" },
+    { name: t("nav_timeline") || "Timeline", icon: Clock, href: "#timeline" },
+    { name: t("nav_projects") || "Projek", icon: FolderGit2, href: "#projek" },
+    { name: t("nav_games") || "Game", icon: Gamepad2, href: "#game" },
     { name: "Admin", icon: Shield, href: "#admin" },
   ];
 
@@ -74,7 +75,7 @@ const FloatingMenu = () => {
       setPasswordError("");
       window.location.href = "/admin";
     } else {
-      setPasswordError("Password salah!");
+      setPasswordError(t("admin_password_error") || "Password salah!");
     }
   };
 
@@ -189,7 +190,7 @@ const FloatingMenu = () => {
                   <div className="flex items-center gap-2">
                     <Lock className="w-6 h-6 text-white" />
                     <h2 className="text-xl font-bold text-white">
-                      Admin Access
+                      {t("admin_title") || "Admin Access"}
                     </h2>
                   </div>
                   <button
@@ -206,13 +207,13 @@ const FloatingMenu = () => {
 
                 <form onSubmit={handleAdminLogin}>
                   <p className="text-gray-400 text-sm mb-4">
-                    Masukkan password untuk mengakses panel admin.
+                    {t("admin_description") || "Masukkan password untuk mengakses panel admin."}
                   </p>
                   <input
                     type="password"
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
-                    placeholder="Password"
+                    placeholder={t("admin_password_placeholder") || "Password"}
                     autoFocus
                     className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-4 text-white mb-3 focus:outline-none focus:border-white/50"
                   />
@@ -223,12 +224,12 @@ const FloatingMenu = () => {
                     type="submit"
                     className="w-full bg-white text-black font-semibold py-2 rounded-lg hover:bg-gray-200 transition"
                   >
-                    Login
+                    {t("admin_login") || "Login"}
                   </button>
                 </form>
 
                 <p className="text-gray-500 text-xs text-center mt-4">
-                  Hubungi admin untuk mendapatkan password
+                  {t("admin_contact") || "Hubungi admin untuk mendapatkan password"}
                 </p>
               </div>
             </motion.div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { Send, Calendar, User, Heart } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
 interface Memory {
   id: number;
@@ -14,6 +15,7 @@ interface Memory {
 }
 
 const MemoryBook = () => {
+  const { t } = useLanguage();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
@@ -55,7 +57,7 @@ const MemoryBook = () => {
     const { error } = await supabase.from('memories').insert([newMemory]);
     
     if (error) {
-      alert('Gagal mengirim pesan: ' + error.message);
+      alert(t("memory_send_error").replace("{error}", error.message));
     } else {
       await fetchMemories();
       setName("");
@@ -68,7 +70,7 @@ const MemoryBook = () => {
     return (
       <section id="kenangan" className="py-24 px-6 bg-black">
         <div className="container mx-auto max-w-6xl text-center">
-          <div className="text-gray-400">Loading kenangan...</div>
+          <div className="text-gray-400">{t("memory_loading")}</div>
         </div>
       </section>
     );
@@ -85,11 +87,11 @@ const MemoryBook = () => {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-            Buku Kenangan
+            {t("memory_title")}
           </h2>
           <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Tuliskan pesan dan kesanmu untuk kelas tercinta
+            {t("memory_subtitle")}
           </p>
         </motion.div>
 
@@ -104,13 +106,13 @@ const MemoryBook = () => {
           >
             <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
               <Heart className="w-5 h-5 text-red-400" />
-              Tulis Pesanmu
+              {t("memory_write")}
             </h3>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-gray-400 text-sm mb-2">
-                  Nama / Panggilan
+                  {t("memory_name")}
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -118,7 +120,7 @@ const MemoryBook = () => {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Contoh: Raya, Nanda, Eka"
+                    placeholder={t("memory_name_placeholder")}
                     className="w-full bg-white/10 border border-white/20 rounded-lg py-2 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-white/50 transition-colors"
                     required
                   />
@@ -127,12 +129,12 @@ const MemoryBook = () => {
 
               <div>
                 <label className="block text-gray-400 text-sm mb-2">
-                  Pesan / Kesan
+                  {t("memory_message")}
                 </label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Tulis pesan kenanganmu..."
+                  placeholder={t("memory_message_placeholder")}
                   rows={4}
                   className="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-white/50 transition-colors resize-none"
                   required
@@ -147,11 +149,11 @@ const MemoryBook = () => {
                 className="w-full bg-white text-black font-semibold py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  "Mengirim..."
+                  t("memory_sending")
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    Kirim Pesan
+                    {t("memory_send")}
                   </>
                 )}
               </motion.button>
@@ -168,7 +170,7 @@ const MemoryBook = () => {
           >
             {memories.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                Belum ada pesan. Jadi yang pertama menulis!
+                {t("memory_empty")}
               </div>
             ) : (
               memories.map((memory, index) => (
@@ -179,7 +181,7 @@ const MemoryBook = () => {
                   transition={{ delay: index * 0.05 }}
                   className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-white/20 transition-all"
                 >
-                  <div className="flex items-start gap-3 notranslate ">
+                  <div className="flex items-start gap-3 notranslate">
                     <img
                       src={memory.avatar}
                       alt={memory.name}

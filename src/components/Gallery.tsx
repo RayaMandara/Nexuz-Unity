@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import Lightbox from "./Lightbox";
 import { Image as ImageIcon, Calendar } from "lucide-react";
 import { GallerySkeleton } from "@/components/Skeleton";
+import { useLanguage } from "../context/LanguageContext";
 
 interface GalleryImage {
   id: number;
@@ -16,6 +17,7 @@ interface GalleryImage {
 }
 
 const Gallery = () => {
+  const { t } = useLanguage();
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [groupedImages, setGroupedImages] = useState<Record<string, GalleryImage[]>>({});
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -88,27 +90,25 @@ const Gallery = () => {
     }
   };
 
-
-
-// Di dalam return, ganti loading state:
-if (loading) {
-  return (
-    <section id="galeri" className="py-24 px-6 bg-black">
-      <div className="container mx-auto max-w-7xl">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-            Galeri Foto
-          </h2>
-          <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Momen-momen berharga yang telah kita lalui bersama
-          </p>
+  // Di dalam return, ganti loading state:
+  if (loading) {
+    return (
+      <section id="galeri" className="py-24 px-6 bg-black">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+              {t("gallery_title")}
+            </h2>
+            <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              {t("gallery_subtitle")}
+            </p>
+          </div>
+          <GallerySkeleton />
         </div>
-        <GallerySkeleton />
-      </div>
-    </section>
-  );
-}
+      </section>
+    );
+  }
 
   return (
     <section id="galeri" className="py-24 px-6 bg-black">
@@ -121,11 +121,11 @@ if (loading) {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-            Galeri Foto
+            {t("gallery_title")}
           </h2>
           <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Momen-momen berharga yang telah kita lalui bersama
+            {t("gallery_subtitle")}
           </p>
         </motion.div>
 
@@ -139,7 +139,7 @@ if (loading) {
                   : "bg-white/10 text-gray-400 hover:bg-white/20"
               }`}
             >
-              Semua
+              {t("gallery_all")}
             </button>
             {availableYears.map((year) => (
               <button
@@ -160,8 +160,8 @@ if (loading) {
         {displayImages.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             {selectedYear === "all"
-              ? "Belum ada foto. Silakan tambah foto di admin panel."
-              : `Belum ada foto untuk tahun ${selectedYear}.`}
+              ? t("gallery_no_photos")
+              : t("gallery_no_photos_year").replace("{year}", selectedYear)}
           </div>
         ) : selectedYear === "all" ? (
           <div className="space-y-12">
@@ -220,13 +220,15 @@ const GalleryCard = ({
   image: GalleryImage;
   onClick: () => void;
 }) => {
+  const { t } = useLanguage();
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       whileInView={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
       viewport={{ once: false, margin: "-100px" }}
-      whileHover={{ y: -5 }}
+      // whileHover={{ y: -5 }}
       onClick={onClick}
       className="group cursor-pointer"
     >
@@ -251,13 +253,13 @@ const GalleryCard = ({
         <div className="p-4">
           <h3 className="text-white font-semibold notranslate">{image.title}</h3>
           {image.description && (
-            <p className="text-gray-400 text-sm mt-1 line-clamp-2">
+            <p className="text-gray-400 text-sm mt-1 line-clamp-2 notranslate">
               {image.description}
             </p>
           )}
           <div className="flex items-center gap-2 mt-2">
             <ImageIcon className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-400 text-sm">Klik untuk lihat</span>
+            <span className="text-gray-400 text-sm">{t("gallery_click_to_view")}</span>
           </div>
         </div>
       </div>

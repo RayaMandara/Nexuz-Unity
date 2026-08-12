@@ -8,6 +8,7 @@ import StudentModal from "./StudentModal";
 import { Crown, Users, UsersRound } from "lucide-react";
 import { CardSkeleton } from "@/components/Skeleton";
 import FlyingEmoji from "./FlyingEmoji";
+import { useLanguage } from "../context/LanguageContext";
 
 interface Student {
   id: number;
@@ -35,6 +36,7 @@ interface FlyingEmojiType {
 }
 
 const StudentList = () => {
+  const { t } = useLanguage();
   const [students, setStudents] = useState<Student[]>([]);
   const [maleStudents, setMaleStudents] = useState<Student[]>([]);
   const [femaleStudents, setFemaleStudents] = useState<Student[]>([]);
@@ -90,14 +92,14 @@ const StudentList = () => {
     setIsModalOpen(true);
     
     if (student.enable_sad_emoji) {
-      setIsGrayscale(true); // ← Aktifkan grayscale
+      setIsGrayscale(true);
       spawnFlyingEmojis();
     }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setIsGrayscale(false); // ← Matikan grayscale
+    setIsGrayscale(false);
     setTimeout(() => setSelectedStudent(null), 300);
   };
 
@@ -131,7 +133,7 @@ const StudentList = () => {
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-              Keluarga Nexuz
+              {t("students_title")}
             </h2>
             <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
           </div>
@@ -156,11 +158,11 @@ const StudentList = () => {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-            Keluarga Nexuz
+            {t("students_title")}
           </h2>
           <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
           <p className="text-gray-400 max-w-2xl mx-auto text-sm md:text-base">
-            Bukan hanya kelas, ini adalah keluarga. Dengan bimbingan wali kelas yang hebat dan kebersamaan siswa yang luar biasa.
+            {t("students_subtitle")}
           </p>
         </motion.div>
 
@@ -175,7 +177,7 @@ const StudentList = () => {
           >
             <div className="flex items-center justify-center gap-2 mb-6">
               <Crown className="w-5 h-5 text-yellow-400" />
-              <h3 className="text-2xl font-semibold text-white">Wali Kelas</h3>
+              <h3 className="text-2xl font-semibold text-white">{t("students_homeroom")}</h3>
               <Crown className="w-5 h-5 text-yellow-400" />
             </div>
             <div className="max-w-md mx-auto">
@@ -193,7 +195,7 @@ const StudentList = () => {
           <div className="mb-12">
             <div className="flex items-center justify-center gap-2 mb-6">
               <Users className="w-5 h-5 text-blue-400" />
-              <h3 className="text-2xl font-semibold text-white">Laki-Laki</h3>
+              <h3 className="text-2xl font-semibold text-white">{t("students_boys")}</h3>
               <Users className="w-5 h-5 text-blue-400" />
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
@@ -214,7 +216,7 @@ const StudentList = () => {
           <div>
             <div className="flex items-center justify-center gap-2 mb-6">
               <UsersRound className="w-5 h-5 text-pink-400" />
-              <h3 className="text-2xl font-semibold text-white">Perempuan</h3>
+              <h3 className="text-2xl font-semibold text-white">{t("students_girls")}</h3>
               <UsersRound className="w-5 h-5 text-pink-400" />
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
@@ -233,7 +235,7 @@ const StudentList = () => {
         {/* Jika tidak ada siswa sama sekali */}
         {maleStudents.length === 0 && femaleStudents.length === 0 && (
           <div className="text-center py-12 text-gray-400">
-            Belum ada data siswa. Silakan tambah di admin panel.
+            {t("students_no_data")}
           </div>
         )}
 

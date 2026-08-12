@@ -12,6 +12,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "../context/LanguageContext";
 
 const CountUp = ({
   end,
@@ -52,13 +53,14 @@ const CountUp = ({
 };
 
 const ClassProfile = () => {
+  const { t } = useLanguage();
   const [studentCount, setStudentCount] = useState(0);
   const [daysTogether, setDaysTogether] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // Hitung hari bersama dari 19 Juli 2024
   useEffect(() => {
-    const startDate = new Date(2024, 6, 19); // 19 Juli 2024 (bulan dimulai dari 0)
+    const startDate = new Date(2024, 6, 19);
     const today = new Date();
     const diffTime = today.getTime() - startDate.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -97,35 +99,46 @@ const ClassProfile = () => {
   };
 
   const stats = [
-    { icon: Users, value: studentCount, label: "Siswa/Siswi", suffix: "" },
-    { icon: Calendar, value: 2024, label: "Angkatan", suffix: "" },
+    { icon: Users, value: studentCount, label: t("profile_students"), suffix: "" },
+    { icon: Calendar, value: 2024, label: t("profile_angkatan"), suffix: "" },
     {
       icon: CalendarDays,
       value: daysTogether,
-      label: "Hari Bersama",
+      label: t("profile_days"),
       suffix: "",
     },
-    { icon: Heart, value: null, label: "Kenangan", suffix: "∞" },
+    { icon: Heart, value: null, label: t("profile_memories"), suffix: "∞" },
   ];
 
   const infoItems = [
     {
       icon: MapPin,
-      label: "Lokasi",
-      value: "SMK Pariwisata Triatma Jaya Badung",
+      label: t("profile_location"),
+      value: t("profile_location_value"),
     },
-    { icon: Clock, label: "Tahun Ajaran", value: "2024 - 2027" },
+    { 
+      icon: Clock, 
+      label: t("profile_year"), 
+      value: t("profile_year_value") 
+    },
   ];
 
   if (loading) {
     return (
       <section id="profil" className="py-24 px-6 bg-black">
         <div className="container mx-auto max-w-6xl text-center">
-          <div className="text-gray-400">Loading profil...</div>
+          <div className="text-gray-400">{t("profile_loading")}</div>
         </div>
       </section>
     );
   }
+
+  // Fungsi untuk mengganti placeholder dalam teks
+  const formatAboutText = (text: string) => {
+    return text
+      .replace("{count}", `<span class="text-white font-semibold">${studentCount}</span>`)
+      .replace("{days}", `<span class="text-white font-semibold">${daysTogether}</span>`);
+  };
 
   return (
     <section id="profil" className="py-24 px-6 bg-black">
@@ -139,11 +152,11 @@ const ClassProfile = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-            Profil Kelas
+            {t("profile_title")}
           </h2>
           <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Kelas dengan semangat juang tinggi dan prestasi membanggakan
+            {t("profile_subtitle")}
           </p>
         </motion.div>
 
@@ -155,19 +168,13 @@ const ClassProfile = () => {
           viewport={{ once: false, margin: "-100px" }}
           className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-white/10"
         >
-          <h3 className="text-2xl font-semibold mb-4">Tentang Kelas Nexuz</h3>
-          <p className="text-gray-300 leading-relaxed">
-            Kelas Nexuz adalah kelas yang terdiri dari{" "}
-            <span className="text-white font-semibold">{studentCount}</span>{" "}
-            siswa-siswi berbakat dengan semangat belajar tinggi. Kami telah
-            bersama selama{" "}
-            <span className="text-white font-semibold">{daysTogether}</span>{" "}
-            hari penuh kenangan. Kami memiliki visi menciptakan generasi yang
-            tidak hanya cerdas secara akademik, tetapi juga memiliki karakter
-            kuat dan jiwa kepemimpinan. Dengan didukung oleh guru-guru
-            profesional dan fasilitas modern, kami terus berinovasi dan
-            berprestasi di berbagai bidang.
-          </p>
+          <h3 className="text-2xl font-semibold mb-4">{t("profile_about_title")}</h3>
+          <p 
+            className="text-gray-300 leading-relaxed"
+            dangerouslySetInnerHTML={{ 
+              __html: formatAboutText(t("profile_about_text")) 
+            }} 
+          />
         </motion.div>
 
         {/* Info Grid */}
@@ -201,7 +208,7 @@ const ClassProfile = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: false, margin: "-100px" }}
-              whileHover={{ y: -5 }}
+              // whileHover={{ y: -5 }}
               className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl p-6 text-center border border-white/10 backdrop-blur-sm"
             >
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -228,7 +235,7 @@ const ClassProfile = () => {
           className="text-center mt-12 pt-8 border-t border-white/10"
         >
           <p className="text-gray-400 italic text-lg">
-            "Bersama Nexuz, Kita Wujudkan Mimpi"
+            {t("profile_motto")}
           </p>
         </motion.div>
       </div>

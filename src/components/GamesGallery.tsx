@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { ExternalLink, Gamepad2, ImageOff } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
 // Update Interface untuk menampung image_url
 interface Game {
@@ -15,6 +16,7 @@ interface Game {
 }
 
 const GamesGallery = () => {
+  const { t } = useLanguage();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -47,7 +49,7 @@ const GamesGallery = () => {
     return (
       <section id="games" className="py-24 px-6 bg-black">
         <div className="container mx-auto max-w-7xl text-center">
-          <div className="text-gray-400">Loading games...</div>
+          <div className="text-gray-400">{t("games_loading")}</div>
         </div>
       </section>
     );
@@ -55,7 +57,7 @@ const GamesGallery = () => {
 
   return (
     <section id="games" className="py-24 px-6 bg-black">
-      <div className="container mx-auto max-w-7xl">
+      <div className="container mx-auto max-w-7xl" id="game" >
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -65,20 +67,20 @@ const GamesGallery = () => {
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 flex items-center justify-center gap-3">
             <Gamepad2 className="w-10 h-10" />
-            Game Kami
+            {t("games_title")}
           </h2>
           <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Kumpulan game seru yang telah dibuat oleh keluarga Nexuz
+            {t("games_subtitle")}
           </p>
         </motion.div>
 
         {games.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
-            Belum ada game.
+            {t("games_no_data")}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 notranslate">
             {games.map((game, index) => (
               <motion.div
                 key={game.id}
@@ -86,7 +88,7 @@ const GamesGallery = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: false, margin: "-100px" }}
-                whileHover={{ y: -5 }}
+                // whileHover={{ y: -5 }}
                 className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 flex flex-col"
               >
                 {/* --- BAGIAN GAMBAR GAME --- */}
@@ -102,7 +104,7 @@ const GamesGallery = () => {
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-500 flex-col gap-2">
                       <ImageOff className="w-8 h-8 opacity-50" />
-                      <span className="text-xs">No Image</span>
+                      <span className="text-xs">{t("games_no_image")}</span>
                     </div>
                   )}
                 </div>
@@ -125,7 +127,7 @@ const GamesGallery = () => {
                     className="inline-flex items-center justify-center gap-2 text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-white transition-all w-fit mt-auto"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Mainkan Sekarang
+                    {t("games_play")}
                   </a>
                 </div>
               </motion.div>

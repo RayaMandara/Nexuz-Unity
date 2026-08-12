@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-
+import { useLanguage } from "../context/LanguageContext";
 
 const Navbar = () => {
+  const { t, language } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -14,6 +15,14 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const navItems = [
+    { key: "home", label: t("nav_home") || "Home" },
+    { key: "profil", label: t("nav_profile") || "Profil" },
+    { key: "siswa", label: t("nav_students") || "Siswa" },
+    { key: "galeri", label: t("nav_gallery") || "Galeri" },
+    { key: "timeline", label: t("nav_timeline") || "Timeline" },
+  ];
 
   return (
     <motion.nav
@@ -27,20 +36,20 @@ const Navbar = () => {
       <div className="container mx-auto px-6 flex justify-between items-center">
         <motion.div
           whileHover={{ scale: 1.05 }}
-          className="text-2xl font-bold tracking-tighter cursor-pointer"
+          className="text-2xl font-bold tracking-tighter cursor-pointer notranslate"
         >
           NEXUZ
         </motion.div>
 
         <div className="hidden md:flex gap-8">
-          {["Home", "Profil", "Siswa", "Galeri", "Timeline"].map((item) => (
+          {navItems.map((item) => (
             <motion.a
-              key={item}
-              href={`#${item.toLowerCase()}`}
+              key={item.key}
+              href={`#${item.key}`}
               whileHover={{ scale: 1.1 }}
               className="text-sm uppercase tracking-wider hover:text-gray-300 transition-colors cursor-pointer"
             >
-              {item}
+              {item.label}
             </motion.a>
           ))}
         </div>

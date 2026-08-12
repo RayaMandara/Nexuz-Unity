@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { RefreshCw, Trophy, Star } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
 interface Student {
   id: number;
@@ -19,6 +20,7 @@ interface Student {
 }
 
 const MiniGame = () => {
+  const { t } = useLanguage();
   const [students, setStudents] = useState<Student[]>([]);
   const [gameQueue, setGameQueue] = useState<Student[]>([]);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
@@ -165,7 +167,7 @@ const MiniGame = () => {
     if (selectedName === currentStudent.nickname) {
       const newScore = score + 10;
       setScore(newScore);
-      setMessage(`Benar! ${emoji} +10 poin`);
+      setMessage(t("game_correct").replace("{emoji}", emoji));
       setMessageType("success");
 
       if (newScore > highScore) {
@@ -189,11 +191,11 @@ const MiniGame = () => {
           }
         } else {
           setGameOver(true);
-          setMessage(`🎉 Selesai! Skor akhir: ${newScore}`);
+          setMessage(t("game_final_score").replace("{score}", newScore.toString()));
         }
       }, 1000);
     } else {
-      setMessage(`❌ Salah! ${emoji} Itu adalah ${currentStudent.nickname}`);
+      setMessage(t("game_wrong").replace("{name}", currentStudent.nickname));
       setMessageType("error");
       setGameOver(true);
     }
@@ -217,11 +219,10 @@ const MiniGame = () => {
   if (isLoading) {
     return (
       <section
-        id="game"
         className="py-24 px-6 bg-black min-h-screen flex items-center"
       >
         <div className="container mx-auto max-w-2xl text-center">
-          <div className="text-gray-400">Loading game...</div>
+          <div className="text-gray-400">{t("game_loading")}</div>
         </div>
       </section>
     );
@@ -230,16 +231,15 @@ const MiniGame = () => {
   if (students.length < 4) {
     return (
       <section
-        id="game"
         className="py-24 px-6 bg-black min-h-screen flex items-center"
       >
         <div className="container mx-auto max-w-2xl text-center">
-          <p className="text-gray-400">Minimal 4 siswa untuk bermain game.</p>
+          <p className="text-gray-400">{t("game_no_students")}</p>
           <p className="text-gray-500 text-sm mt-2">
-            Saat ini hanya {students.length} siswa (wali kelas tidak termasuk).
+            {t("game_current_students").replace("{count}", students.length.toString())}
           </p>
           <p className="text-gray-500 text-sm">
-            Silakan tambah siswa di admin panel.
+            {t("game_no_data")}
           </p>
         </div>
       </section>
@@ -250,7 +250,6 @@ const MiniGame = () => {
 
   return (
     <section
-      id="game"
       className="py-24 px-6 bg-black min-h-screen flex items-center"
     >
       <div className="container mx-auto max-w-2xl">
@@ -262,10 +261,10 @@ const MiniGame = () => {
           className="text-center mb-8"
         >
           <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
-            Permainan
+            {t("game_title")}
           </h2>
           <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
-          <p className="text-gray-400">Tebak teman sekelas dari foto buram!</p>
+          <p className="text-gray-400">{t("game_subtitle")}</p>
         </motion.div>
 
         <motion.div
@@ -276,12 +275,12 @@ const MiniGame = () => {
           <div className="flex items-center gap-3">
             <Trophy className="w-5 h-5 text-yellow-400" />
             <div>
-              <p className="text-gray-400 text-xs">Skor Tertinggi</p>
+              <p className="text-gray-400 text-xs">{t("game_highscore")}</p>
               <p className="text-white font-bold text-xl">{highScore}</p>
             </div>
           </div>
           <div className="text-center">
-            <p className="text-gray-400 text-xs">Ronde</p>
+            <p className="text-gray-400 text-xs">{t("game_round")}</p>
             <p className="text-white font-bold text-xl">
               {round}/{TOTAL_ROUNDS}
             </p>
@@ -289,7 +288,7 @@ const MiniGame = () => {
           <div className="flex items-center gap-3">
             <Star className="w-5 h-5 text-yellow-400" />
             <div>
-              <p className="text-gray-400 text-xs">Skor</p>
+              <p className="text-gray-400 text-xs">{t("game_score")}</p>
               <p className="text-white font-bold text-xl">{score}</p>
             </div>
           </div>
@@ -323,18 +322,18 @@ const MiniGame = () => {
                   </motion.div>
                 )}
                 <p className="mt-4 text-sm font-semibold">
-                  <span>Tingkatan : </span> 
+                  <span>{t("game_level")}</span> 
                   {blurLevel <= 4 ? (
-                    <span className="text-green-400">Mudah</span>
+                    <span className="text-green-400">{t("game_easy")}</span>
                   ) : blurLevel <= 8 ? (
-                    <span className="text-yellow-400">Sedang</span>
+                    <span className="text-yellow-400">{t("game_medium")}</span>
                   ) : (
-                    <span className="text-red-400">Sulit</span>
+                    <span className="text-red-400">{t("game_hard")}</span>
                   )}
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-6 notranslate ">
+              <div className="grid grid-cols-2 gap-3 mb-6 notranslate">
                 {options.map((option, index) => (
                   <motion.button
                     key={index}
@@ -376,11 +375,13 @@ const MiniGame = () => {
               className="text-center"
             >
               <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-white mb-2">Permaianan Berakhir!</h3>
-              <p className="text-gray-400 mb-2">Skor akhir kamu: {score}</p>
+              <h3 className="text-2xl font-bold text-white mb-2">{t("game_over")}</h3>
+              <p className="text-gray-400 mb-2">
+                {t("game_final_score").replace("{score}", score.toString())}
+              </p>
               {score === highScore && score > 0 && (
                 <p className="text-yellow-400 mb-4">
-                  🎉 Skor tertinggi baru! 🎉
+                  {t("game_new_highscore")}
                 </p>
               )}
               <motion.button
@@ -390,14 +391,14 @@ const MiniGame = () => {
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-full font-semibold hover:bg-gray-200 transition-all"
               >
                 <RefreshCw className="w-4 h-4" />
-                Main Lagi
+                {t("game_play_again")}
               </motion.button>
             </motion.div>
           )}
         </motion.div>
 
         <div className="text-center mt-6 text-gray-500 text-xs">
-          <p>🏆 Jawab 10 pertanyaan dengan benar untuk menang</p>
+          <p>{t("game_win_condition").replace("{total}", TOTAL_ROUNDS.toString())}</p>
         </div>
       </div>
     </section>

@@ -3,8 +3,11 @@
 import { motion } from "framer-motion";
 import { Heart, ArrowUp } from "lucide-react";
 import { FaInstagram } from "react-icons/fa";
+import { useLanguage } from "../context/LanguageContext";
 
 const Footer = () => {
+  const { t } = useLanguage();
+  
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -23,10 +26,10 @@ const Footer = () => {
           className="mb-8"
         >
           <p className="text-gray-300 italic text-lg md:text-xl">
-            "Bukan akhir dari segalanya, tapi awal dari kenangan yang akan terus hidup."
+            {t("footer_quote")}
           </p>
           <p className="text-gray-500 mt-2 text-sm">
-            Nexuz Unity
+            {t("footer_quote_author")}
           </p>
         </motion.div>
 
@@ -53,7 +56,7 @@ const Footer = () => {
         >
           <div className="flex items-center justify-center gap-2 text-gray-400 text-sm">
             <Heart className="w-4 h-4 text-red-400" />
-            <span>Terima kasih telah menjadi bagian dari cerita kami</span>
+            <span>{t("footer_thanks")}</span>
             <Heart className="w-4 h-4 text-red-400" />
           </div>
         </motion.div>
@@ -65,8 +68,8 @@ const Footer = () => {
           viewport={{ once: false, margin: "-100px" }}
           className="text-gray-500 text-xs space-y-1"
         >
-          <p>© 2024 - 2027 • Nexuz Unity • SMK Pariwisata Triatma Jaya Badung</p>
-          <p>Dibuat dengan ❤️ oleh Keluarga Nexuz</p>
+          <p>{t("footer_copyright")}</p>
+          <p>{t("footer_credit")}</p>
         </motion.div>
 
         <motion.button
@@ -76,7 +79,7 @@ const Footer = () => {
           viewport={{ once: false, margin: "-100px" }}
           onClick={scrollToTop}
           className="fixed bottom-6 right-6 z-40 w-10 h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center hover:bg-white hover:scale-110 transition-all duration-300 group"
-          aria-label="Kembali ke atas"
+          aria-label={t("footer_back_to_top")}
         >
           <ArrowUp className="w-4 h-4 text-white group-hover:text-black transition-colors" />
         </motion.button>

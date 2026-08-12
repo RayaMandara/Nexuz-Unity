@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, Target, Quote } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
 interface Student {
   id: number;
@@ -24,6 +25,8 @@ interface StudentModalProps {
 }
 
 const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
+  const { t } = useLanguage();
+  
   if (!student) return null;
 
   return (
@@ -74,7 +77,7 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                     transition={{ delay: 0.1 }}
                   >
                     <h2 className="text-3xl font-bold text-white mb-1">{student.name}</h2>
-                    <p className="text-gray-400 mb-4">
+                    <p className="text-gray-400 mb-4 notranslate">
                       {student.aka && <span className="text-white font-medium">{student.aka}</span>}
                       {student.aka && student.nickname && <span> • </span>}
                       {student.nickname && <span>{student.nickname}</span>}
@@ -86,8 +89,8 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                           <Heart className="w-4 h-4 text-white" />
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm">Hobi</p>
-                          <p className="text-white font-medium">{student.hobby}</p>
+                          <p className="text-gray-400 text-sm">{t("student_modal_hobby")}</p>
+                          <p className="text-white font-medium notranslate">{student.hobby}</p>
                         </div>
                       </div>
 
@@ -96,8 +99,8 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                           <Target className="w-4 h-4 text-white" />
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm">Cita-cita</p>
-                          <p className="text-white font-medium">{student.dream}</p>
+                          <p className="text-gray-400 text-sm">{t("student_modal_dream")}</p>
+                          <p className="text-white font-medium notranslate">{student.dream}</p>
                         </div>
                       </div>
 
@@ -106,8 +109,8 @@ const StudentModal = ({ student, isOpen, onClose }: StudentModalProps) => {
                           <Quote className="w-4 h-4 text-white" />
                         </div>
                         <div>
-                          <p className="text-gray-400 text-sm">Quote Pribadi</p>
-                          <p className="text-white italic">"{student.quote}"</p>
+                          <p className="text-gray-400 text-sm">{t("student_modal_quote")}</p>
+                          <p className="text-white italic notranslate">"{student.quote}"</p>
                         </div>
                       </div>
                     </div>

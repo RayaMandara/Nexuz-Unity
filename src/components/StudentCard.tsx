@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { User, Crown, Star, FileText, Calculator, GraduationCap } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
 interface Student {
   id: number;
@@ -27,28 +28,30 @@ interface StudentCardProps {
   index: number;
 }
 
-const getRoleBadge = (role?: string, isTeacher?: boolean) => {
-  if (isTeacher) {
-    return { label: "Wali Kelas", color: "bg-purple-600", icon: GraduationCap };
-  }
-  
-  switch (role) {
-    case "ketua":
-      return { label: "Ketua", color: "bg-amber-600", icon: Crown };
-    case "wakil":
-      return { label: "Wakil", color: "bg-sky-600", icon: Star };
-    case "sekretaris1":
-    case "sekretaris2":
-      return { label: "Sekretaris", color: "bg-emerald-600", icon: FileText };
-    case "bendahara1":
-    case "bendahara2":
-      return { label: "Bendahara", color: "bg-blue-600", icon: Calculator };
-    default:
-      return null;
-  }
-};
-
 const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
+  const { t } = useLanguage();
+
+  const getRoleBadge = (role?: string, isTeacher?: boolean) => {
+    if (isTeacher) {
+      return { label: t("student_card_homeroom"), color: "bg-purple-600", icon: GraduationCap };
+    }
+    
+    switch (role) {
+      case "ketua":
+        return { label: t("student_card_ketua"), color: "bg-amber-600", icon: Crown };
+      case "wakil":
+        return { label: t("student_card_wakil"), color: "bg-sky-600", icon: Star };
+      case "sekretaris1":
+      case "sekretaris2":
+        return { label: t("student_card_sekretaris"), color: "bg-emerald-600", icon: FileText };
+      case "bendahara1":
+      case "bendahara2":
+        return { label: t("student_card_bendahara"), color: "bg-blue-600", icon: Calculator };
+      default:
+        return null;
+    }
+  };
+
   const roleBadge = getRoleBadge(student.role, student.is_teacher);
 
   return (
@@ -57,11 +60,10 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
       viewport={{ once: false, margin: "-100px" }}
-      // whileHover={{ y: -5, scale: 1.02 }}
       onClick={onClick}
       className="group cursor-pointer relative"
     >
-      <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 backdrop-blur-sm notranslate ">
+      <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 backdrop-blur-sm notranslate">
         <div className="relative overflow-hidden h-48 sm:h-52 md:h-56 bg-black/20">
           {/* Badge Emoji Burung */}
           {student.enable_sad_emoji && (
@@ -91,11 +93,7 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
             {roleBadge && (
               <span className={`${roleBadge.color} px-1.5 py-0.5 rounded-full text-[10px] font-semibold text-white inline-flex items-center gap-0.5 flex-shrink-0`}>
                 <roleBadge.icon className="w-2.5 h-2.5" />
-                {roleBadge.label === "Ketua" ? "Ketua" : 
-                 roleBadge.label === "Wakil" ? "Wakil" :
-                 roleBadge.label === "Sekretaris" ? "Sekretaris" :
-                 roleBadge.label === "Bendahara" ? "Bendahara" :
-                 roleBadge.label}
+                {roleBadge.label}
               </span>
             )}
           </div>
@@ -106,7 +104,7 @@ const StudentCard = ({ student, onClick, index }: StudentCardProps) => {
           
           <div className="flex items-center gap-1 text-gray-400 text-xs">
             <User className="w-3 h-3" />
-            <span>Klik</span>
+            <span>{t("students_click")}</span>
           </div>
         </div>
       </div>
