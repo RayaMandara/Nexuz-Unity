@@ -1,139 +1,84 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { supabase } from "@/lib/supabase";
-import { ExternalLink, Gamepad2, ImageOff } from "lucide-react";
+import { ExternalLink, Gamepad2, Sparkles, Play } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 
-// Update Interface untuk menampung image_url
-interface Game {
-  id: number;
-  title: string;
-  description: string;
-  image_url: string | null; // Tambahkan ini
-  game_url: string;
-}
+const GAMEHUB_URL = "https://gamehub-nexuz.vercel.app/";
 
 const GamesGallery = () => {
   const { t } = useLanguage();
-  const [games, setGames] = useState<Game[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchGames();
-  }, []);
-
-  const fetchGames = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('games')
-        .select('*')
-        .order('id', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching games:', error);
-        setGames([]);
-      } else {
-        setGames(data || []);
-      }
-    } catch (err) {
-      console.error('Fetch error:', err);
-      setGames([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <section id="games" className="py-24 px-6 bg-black">
-        <div className="container mx-auto max-w-7xl text-center">
-          <div className="text-gray-400">{t("games_loading")}</div>
-        </div>
-      </section>
-    );
-  }
 
   return (
-    <section id="games" className="py-24 px-6 bg-black">
-      <div className="container mx-auto max-w-7xl" id="game" >
+    <section id="games" className="py-24 px-4 md:px-6 bg-black relative overflow-hidden">
+      {/* Background ambient lighting */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-r from-purple-600/15 via-blue-600/15 to-pink-600/15 blur-[120px] rounded-full pointer-events-none -z-0" />
+
+      <div className="container mx-auto max-w-6xl relative z-10" id="game">
+        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: false, margin: "-100px" }}
+          viewport={{ once: true, margin: "-80px" }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 flex items-center justify-center gap-3">
-            <Gamepad2 className="w-10 h-10" />
-            {t("games_title")}
+
+
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 flex items-center justify-center gap-3 text-white">
+            <span>{t("games_title") || "Kunjungi GameHub Kami"}</span>
           </h2>
-          <div className="w-20 h-0.5 bg-white mx-auto mb-6" />
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            {t("games_subtitle")}
+
+          <div className="w-20 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 mx-auto rounded-full mb-6" />
+
+          <p className="text-gray-400 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+            {t("games_subtitle") ||
+              "Jelajahi dan mainkan berbagai koleksi game seru karya keluarga Nexuz langsung di portal resmi GameHub"}
           </p>
         </motion.div>
 
-        {games.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            {t("games_no_data")}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 notranslate">
-            {games.map((game, index) => (
-              <motion.div
-                key={game.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: false, margin: "-100px" }}
-                // whileHover={{ y: -5 }}
-                className="bg-gradient-to-br from-white/5 to-white/10 rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 flex flex-col"
-              >
-                {/* --- BAGIAN GAMBAR GAME --- */}
-                <div className="relative w-full h-48 bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden flex-shrink-0">
-                  {game.image_url ? (
-                    <motion.img
-                      src={game.image_url}
-                      alt={game.title}
-                      className="w-full h-full object-cover"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.4 }}
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500 flex-col gap-2">
-                      <ImageOff className="w-8 h-8 opacity-50" />
-                      <span className="text-xs">{t("games_no_image")}</span>
-                    </div>
-                  )}
-                </div>
-                {/* -------------------------- */}
+        {/* Full-width GameHub Showcase Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          viewport={{ once: true, margin: "-80px" }}
+        >
+          <a
+            href={GAMEHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group block relative w-full rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all duration-500 shadow-2xl hover:shadow-[0_0_50px_rgba(168,85,247,0.35)] cursor-pointer"
+          >
+            {/* Banner Image with responsive aspect ratio */}
+            <div className="relative w-full aspect-[16/9] md:aspect-[21/9] overflow-hidden bg-gradient-to-br from-gray-900 to-black">
+              <motion.img
+                src="/gamehub-banner.png"
+                alt="GameHub Nexuz - Kunjungi GameHub Kami"
+                className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+              />
 
-                <div className="p-6 flex flex-col flex-grow">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Gamepad2 className="w-6 h-6 text-purple-400" />
-                    <h3 className="text-xl font-bold text-white">{game.title}</h3>
-                  </div>
-                  
-                  <p className="text-gray-300 text-sm mb-4 line-clamp-3 flex-grow">
-                    {game.description}
-                  </p>
-                  
-                  <a
-                    href={game.game_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-white transition-all w-fit mt-auto"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    {t("games_play")}
-                  </a>
+
+              {/* Bottom Interactive Content Area */}
+              <div className="absolute bottom-0 inset-x-0 p-5 md:p-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 z-10">
+                <div className="max-w-xl">
+                  <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight drop-shadow-md group-hover:text-purple-200 transition-colors">
+                    GameHub
+                  </h3>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+
+                {/* Call To Action Button (Pulses/Glows on Hover) */}
+                <div className="flex-shrink-0">
+                  <span className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white text-black font-bold text-sm shadow-xl group-hover:bg-gradient-to-r group-hover:from-purple-500 group-hover:to-pink-500 group-hover:text-white transition-all duration-300 transform group-hover:scale-105">
+                    <Play className="w-4 h-4 fill-current" />
+                    <span>{t("games_cta") || "Buka GameHub"}</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </motion.div>
       </div>
     </section>
   );

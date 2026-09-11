@@ -47,7 +47,7 @@ interface GalleryImage {
   title: string;
   date: string;
   year: string;
-  description: string;
+  description?: string;
 }
 
 interface TimelineEvent {
@@ -1061,11 +1061,6 @@ export default function AdminPage() {
                                   <h3 className="font-semibold text-white truncate">
                                     {item.title}
                                   </h3>
-                                  {item.description && (
-                                    <p className="text-gray-400 text-xs mt-1 line-clamp-2">
-                                      {item.description}
-                                    </p>
-                                  )}
                                   <p className="text-gray-500 text-xs mt-1">
                                     {item.year}
                                   </p>
@@ -1691,13 +1686,6 @@ function ModalForm({ type, data, tab, onClose, onSave }: any) {
         required: type === "add",
       },
       { name: "title", label: "Judul", type: "text", required: true },
-      {
-        name: "description",
-        label: "Deskripsi (opsional)",
-        type: "textarea",
-        required: false,
-        placeholder: "Cerita singkat tentang foto ini...",
-      },
       {
         name: "year",
         label: "Tahun",

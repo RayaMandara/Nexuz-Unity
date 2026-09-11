@@ -8,7 +8,7 @@ interface GalleryImage {
   id: number;
   src: string;
   title: string;
-  description: string;
+  description?: string;
   year: string;
 }
 
@@ -94,11 +94,6 @@ const Lightbox = ({
                   <h3 className="text-white text-xl font-semibold mb-1">
                     {currentImage.title}
                   </h3>
-                  {currentImage.description && (
-                    <p className="text-gray-300 text-sm mb-2">
-                      {currentImage.description}
-                    </p>
-                  )}
                   <p className="text-gray-400 text-xs">{currentImage.year}</p>
                   <p className="text-gray-500 text-xs mt-2">
                     {currentIndex + 1} / {images.length}

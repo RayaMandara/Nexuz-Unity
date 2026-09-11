@@ -13,11 +13,12 @@ export const translations = {
     nav_students: "Siswa",
     nav_gallery: "Galeri",
     nav_timeline: "Lini Waktu",
-    nav_projects: "Projek",
+    nav_projects: "Proyek",
     nav_games: "Game",
+    nav_memory: "Buku Kenangan",
 
     // Admin Modal
-    admin_title: "Admin Access",
+    admin_title: "Akses Admin",
     admin_description: "Masukkan password untuk mengakses panel admin.",
     admin_password_placeholder: "Password",
     admin_password_error: "Password salah!",
@@ -62,7 +63,7 @@ export const translations = {
     // Student Modal
     student_modal_hobby: "Hobi",
     student_modal_dream: "Cita-cita",
-    student_modal_quote: "Quote Pribadi",
+    student_modal_quote: "Quote",
 
     // Gallery
     gallery_title: "Galeri Foto",
@@ -101,7 +102,7 @@ export const translations = {
     memory_title: "Buku Kenangan",
     memory_subtitle: "Tuliskan pesan dan kesanmu untuk kelas tercinta",
     memory_write: "Tulis Pesanmu",
-    memory_name: "Nama / Panggilan",
+    memory_name: "Nama",
     memory_name_placeholder: "Contoh: Raya, Nanda, Eka",
     memory_message: "Pesan / Kesan",
     memory_message_placeholder: "Tulis pesan kenanganmu...",
@@ -137,26 +138,26 @@ export const translations = {
       "Tidak ada data siswa. Silakan tambah siswa di admin panel terlebih dahulu.",
 
     // Projects
-    projects_title: "Projek Kami",
-    projects_subtitle: "Projek yang telah kami buat",
-    projects_no_data: "Belum ada projek. Silakan tambah di admin panel.",
+    projects_title: "Proyek Kami",
+    projects_subtitle: "Proyek yang telah kami buat",
+    projects_no_data: "Belum ada Proyek. Silakan tambah di admin panel.",
     projects_view: "Lihat Demo",
     projects_no_link: "Tidak ada link",
-    projects_loading: "Memuat projek...",
+    projects_loading: "Memuat Proyek...",
     projects_filter_all: "Semua",
     projects_filter_done: "Selesai",
     projects_filter_wip: "Dalam Pengembangan",
     projects_status_done: "Selesai",
     projects_status_wip: "WIP",
-    projects_empty_filter: 'Tidak ada projek dengan status "{filter}"',
+    projects_empty_filter: 'Tidak ada Proyek dengan status "{filter}"',
 
     // Games
-    games_title: "Game Kami",
-    games_subtitle: "Kumpulan game seru yang telah dibuat oleh keluarga Nexuz",
-    games_no_data: "Belum ada game. Silakan tambah di admin panel.",
+    games_title: "Kunjungi GameHub Kami",
+    games_subtitle: "Jelajahi dan mainkan berbagai koleksi game seru karya keluarga Nexuz langsung di portal resmi GameHub",
+    games_cta: "Buka GameHub",
+    games_badge: "Official Game Portal",
     games_play: "Mainkan Sekarang",
     games_loading: "Memuat game...",
-    games_no_image: "Tidak Ada Gambar",
 
     // Footer
     footer_quote:
@@ -185,6 +186,7 @@ export const translations = {
     nav_timeline: "Timeline",
     nav_projects: "Projects",
     nav_games: "Games",
+    nav_memory: "Memory Book",
 
     // Admin Modal
     admin_title: "Admin Access",
@@ -231,7 +233,7 @@ export const translations = {
     // Student Modal
     student_modal_hobby: "Hobby",
     student_modal_dream: "Dream",
-    student_modal_quote: "Personal Quote",
+    student_modal_quote: "Quote",
 
     // Gallery
     gallery_title: "Photo Gallery",
@@ -268,7 +270,7 @@ export const translations = {
     memory_title: "Memory Book",
     memory_subtitle: "Write your message and impressions for the beloved class",
     memory_write: "Write Your Message",
-    memory_name: "Name / Nickname",
+    memory_name: "Name",
     memory_name_placeholder: "Example: Raya, Nanda, Eka",
     memory_message: "Message / Impression",
     memory_message_placeholder: "Write your memory message...",
@@ -317,12 +319,12 @@ export const translations = {
     projects_empty_filter: 'No projects with status "{filter}"',
 
     // Games
-    games_title: "Our Games",
-    games_subtitle: "Collection of fun games made by the Nexuz family",
-    games_no_data: "No games yet. Please add in admin panel.",
+    games_title: "Visit Our GameHub",
+    games_subtitle: "Explore and play various exciting games created by the Nexuz family directly on the official GameHub portal",
+    games_cta: "Open GameHub",
+    games_badge: "Official Game Portal",
     games_play: "Play Now",
     games_loading: "Loading games...",
-    games_no_image: "No Image",
 
     // Footer
     footer_quote:
@@ -349,43 +351,44 @@ export const translations = {
     nav_students: "Sisya",
     nav_gallery: "Galeri",
     nav_timeline: "Pajalan",
-    nav_projects: "Projek",
+    nav_projects: "Proyek",
     nav_games: "Palalyan",
+    nav_memory: "Buku Kenangan",
 
     // Admin Modal
-    admin_title: "Admin akses",
-    admin_description: "celepang password mangda ngidang ngakses panel admin.",
+    admin_title: "Akses Admin",
+    admin_description: "Masukkan password untuk mengakses panel admin.",
     admin_password_placeholder: "Password",
     admin_password_error: "Password pelih!",
     admin_login: "Login",
-    admin_contact: "piuning admine mangda polih password punika",
+    admin_contact: "Hubungi admin untuk mendapatkan password.",
 
     // Profile
 // Profile
     profile_title: "Profil Kelas",
     profile_subtitle:
-      "Kelas sane madue semangat juang inggil lan prestasi sane nganggehang",
+      "Kelas dengan semangat juang tinggi dan prestasi membanggakan",
     profile_about_title: "Indik Kelas Nexuz",
     profile_about_text:
       "Kelas Nexuz puniki kelas sane madaging {count} sisya mabakat antuk semangat mlajah sane inggil. Tiyang sareng sami sampun acangkreman nganti {days} dina sane bek antuk kenangan. Tiyang sareng sami madue visi ngawentenang generasi sane nenten ja wantah wicaksana ring akademik, nanging taler madue karakter sane kuat lan jiwa pamimpin. Kasarengin antuk guru-guru profesional lan fasilitas modern, tiyang sareng sami setata berinovasi lan berprestasi ring makasami bidang.",
-    profile_motto: '"Sareng Nexuz, Iraga Ngewujudang Impian"',
+    profile_motto: '"Bersama Nexuz, Kita Wujudkan Mimpi"',
     profile_students: "Sisya",
     profile_angkatan: "Angkatan",
     profile_days: "Dina Sareng-Sareng",
     profile_memories: "Kenangan",
     profile_location: "Genah",
     profile_location_value: "SMK Pariwisata Triatma Jaya Badung",
-    profile_year: "Warsa Ajahan",
+    profile_year: "Tahun Ajaran",
     profile_year_value: "2024 - 2027",
-    profile_loading: "Kasediayang profil...",
+    profile_loading: "Memuat profil...",
 
     // Students
     students_title: "Kulawarga Nexuz",
     students_subtitle:
       "Nenten ja wantah kelas, puniki pinaka kulawarga. Kasarengin antuk bimbingan wali kelas sane utama lan kagulungan sisya sane luwih pisan.",
-    students_boys: "Mewasta / Lanang",
+    students_boys: "Lanang",
     students_girls: "Istri",
-    students_click: "Ceklik",
+    students_click: "Klik",
     students_no_data: "Durung wenten data sisya. Durus wewehin ring admin panel.",
     students_homeroom: "Wali Kelas",
     students_no_students:
@@ -399,7 +402,7 @@ export const translations = {
     // Student Modal
     student_modal_hobby: "Demenan / Hobi",
     student_modal_dream: "Cita-cita",
-    student_modal_quote: "Piteket Kiang / Quote",
+    student_modal_quote: "Quote",
 
     // Gallery
     gallery_title: "Galeri Foto",
@@ -407,21 +410,21 @@ export const translations = {
     gallery_all: "Sami",
     gallery_no_photos: "Durung wenten foto. Durus wewehin foto ring admin panel.",
     gallery_no_photos_year: "Durung wenten foto antuk warsa {year}.",
-    gallery_click_to_view: "Ceklik antuk cingak",
-    gallery_loading: "Kasediayang galeri...",
+    gallery_click_to_view: "Klik untuk lihat",
+    gallery_loading: "Memuat galeri...",
 
     // Timeline
-    timeline_title: "Lelampahan Kelas",
+    timeline_title: "Perjalanan Kelas",
     timeline_subtitle:
-      "Besik-besik langkah punika cerita.  momen punika kenangan.",
+      "Setiap langkah adalah cerita. Setiap momen adalah kenangan.",
     timeline_no_data:
       "Durung wenten event timeline. Durus wewehin event ring admin panel.",
-    timeline_loading: "Kasediayang timeline...",
+    timeline_loading: "Memuat timeline...",
 
     // Timeline Data
     timeline_data: {
-      "Mare Masuk Sekolah": {
-        title: "Pariumpama Menceg Sekolah",
+      "Awal Masuk Sekolah": {
+        title: "Awal Masuk Sekolah",
         description:
           "Momen kapertama sisya anyar macunduk ring kelas RPL. Rasa kaku lan antusiasme nyambut masa anyar ring SMK Pariwisata Triatma Jaya Badung.",
         date: "15 Juli",
@@ -435,23 +438,23 @@ export const translations = {
     },
 
     // Memory Book
-    memory_title: "Cakepan Kenangan",
-    memory_subtitle: "Suratang pesan lan kesan ragane antuk kelas sane katresnin",
-    memory_write: "Surat Pesan Ragane",
-    memory_name: "Pesengan / Parab",
+    memory_title: "Buku Kenangan",
+    memory_subtitle: "Tuliskan pesan dan kesanmu untuk kelas tercinta",
+    memory_write: "Tulis Pesanmu",
+    memory_name: "Nama",
     memory_name_placeholder: "Pahiasan: Raya, Nanda, Eka",
     memory_message: "Pesan / Kesan",
-    memory_message_placeholder: "Surat pesan kenangan ragane...",
+    memory_message_placeholder: "Tulis Pesan Kenanganmu...",
     memory_send: "Kirim Pesan",
     memory_empty: "Durung wenten pesan. Dados sane kapertama nyurat!",
     memory_sending: "Ngirimang...",
     memory_send_error: "Gagal ngirim pesan: {error}",
-    memory_loading: "Kasediayang kenangan...",
+    memory_loading: "Memuat kenangan...",
 
     // Mini Game
-    game_title: "Panyatran / Game",
-    game_subtitle: "Tebak timpal sekelas saking foto samar!",
-    game_highscore: "Skor Pinih Inggil",
+    game_title: "Palalian",
+    game_subtitle: "Tebak teman sekelas dari foto buram!",
+    game_highscore: "Skor Tertinggi",
     game_round: "Ronde",
     game_score: "Skor",
     game_easy: "Aluh",
@@ -460,12 +463,12 @@ export const translations = {
     game_correct: "Patut! +10 poin",
     game_wrong: "Pelih! Punika indik {name}",
     game_over: "Panyatran Wusan!",
-    game_final_score: "Skor pamungkas ragane: {score}",
+    game_final_score: "Skor akhir kamu: {score}",
     game_play_again: "Main Malih",
     game_no_students:
       "Pinih kidik 4 sisya antuk main game. Durus wewehin sisya ring admin panel dumun.",
-    game_loading: "Kasediayang game...",
-    game_new_highscore: "🎉 Skor pinih inggil anyar! 🎉",
+    game_loading: "Memuat game...",
+    game_new_highscore: "🎉 Skor tertinggi baru! 🎉",
     game_level: "Tingkatan : ",
     game_win_condition: "🏆 Maweweh {total} pitaken antuk patut mangda menang",
     game_current_students:
@@ -474,26 +477,26 @@ export const translations = {
       "Nenten wenten data sisya. Durus wewehin sisya ring admin panel dumun.",
 
     // Projects
-    projects_title: "Karya Tiyang Sareng-Sareng / Projek",
-    projects_subtitle: "Projek sane sampun kakaryanin antuk tiyang sareng sami",
-    projects_no_data: "Durung wenten projek. Durus wewehin ring admin panel.",
-    projects_view: "Cingak Demo",
+    projects_title: "Karya Tiyang Sareng-Sareng / Proyek",
+    projects_subtitle: "Proyek sane sampun kakaryanin antuk tiyang sareng sami",
+    projects_no_data: "Durung wenten Proyek. Durus wewehin ring admin panel.",
+    projects_view: "Lihat Demo",
     projects_no_link: "Nenten wenten link",
-    projects_loading: "Kasediayang projek...",
+    projects_loading: "Memuat Proyek...",
     projects_filter_all: "Sami",
     projects_filter_done: "Wusan / Selesai",
-    projects_filter_wip: "Durung Wusan / WIP",
+    projects_filter_wip: "Dalam Pengembangan",
     projects_status_done: "Wusan / Selesai",
     projects_status_wip: "WIP",
-    projects_empty_filter: 'Nenten wenten projek antuk status "{filter}"',
+    projects_empty_filter: 'Nenten wenten Proyek antuk status "{filter}"',
 
     // Games
-    games_title: "Game Tiyang Sareng-Sareng",
-    games_subtitle: "Kumpulan game sane sampun kakaryanin antuk kulawarga Nexuz",
-    games_no_data: "Durung wenten game. Durus wewehin ring admin panel.",
+    games_title: "Rereh GameHub Tiang",
+    games_subtitle: "Rereh tur mainang makudang-kudang game rame karya kulawarga Nexuz ring portal resmi GameHub",
+    games_cta: "Mungkah GameHub",
+    games_badge: "Portal Game Resmi",
     games_play: "Mainkan Mangkin",
-    games_loading: "Kasediayang game...",
-    games_no_image: "Nenten Wenten Gambar",
+    games_loading: "Memuat game...",
 
     // Footer
     footer_quote:
@@ -503,6 +506,6 @@ export const translations = {
     footer_copyright:
       "© 2024 - 2027 • Nexuz Unity • SMK Pariwisata Triatma Jaya Badung",
     footer_credit: "Kakaryanin antuk ❤️ olih Kulawarga Nexuz",
-    footer_back_to_top: "Mewali ka duhur",
+    footer_back_to_top: "Kembali ke atas",
   },
 };

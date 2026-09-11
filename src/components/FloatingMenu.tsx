@@ -10,6 +10,7 @@ import {
   Users,
   Image,
   Clock,
+  BookHeart,
   BookMarked,
   Gamepad2,
   Music,
@@ -41,9 +42,10 @@ const FloatingMenu = () => {
     { name: t("nav_profile") || "Profil", icon: GraduationCap, href: "#profil" },
     { name: t("nav_students") || "Siswa", icon: Users, href: "#siswa" },
     { name: t("nav_gallery") || "Galeri", icon: Image, href: "#galeri" },
-    { name: t("nav_timeline") || "Timeline", icon: Clock, href: "#timeline" },
+    // { name: t("nav_timeline") || "Timeline", icon: Clock, href: "#timeline" },
     { name: t("nav_projects") || "Projek", icon: FolderGit2, href: "#projek" },
     { name: t("nav_games") || "Game", icon: Gamepad2, href: "#game" },
+    { name: t("nav_memory") || "Buku Kenangan", icon: BookHeart, href: "#kenangan" },
     { name: "Admin", icon: Shield, href: "#admin" },
   ];
 

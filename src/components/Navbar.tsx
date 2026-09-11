@@ -21,7 +21,8 @@ const Navbar = () => {
     { key: "profil", label: t("nav_profile") || "Profil" },
     { key: "siswa", label: t("nav_students") || "Siswa" },
     { key: "galeri", label: t("nav_gallery") || "Galeri" },
-    { key: "timeline", label: t("nav_timeline") || "Timeline" },
+    // { key: "timeline", label: t("nav_timeline") || "Timeline" },
+    { key: "kenangan", label: t("nav_memory") || "Buku Kenangan" },
   ];
 
   return (

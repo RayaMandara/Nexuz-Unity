@@ -10,8 +10,7 @@ export const GallerySkeleton = () => {
           <div className="h-64 bg-white/10 animate-pulse" />
           <div className="p-4 space-y-2">
             <div className="h-5 bg-white/10 rounded animate-pulse w-3/4" />
-            <div className="h-4 bg-white/10 rounded animate-pulse w-full" />
-            <div className="h-4 bg-white/10 rounded animate-pulse w-2/3" />
+            <div className="h-4 bg-white/10 rounded animate-pulse w-1/3" />
           </div>
         </div>
       ))}

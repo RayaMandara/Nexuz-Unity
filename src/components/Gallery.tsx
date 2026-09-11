@@ -12,7 +12,7 @@ interface GalleryImage {
   id: number;
   src: string;
   title: string;
-  description: string;
+  description?: string;
   year: string;
 }
 
@@ -252,11 +252,6 @@ const GalleryCard = ({
 
         <div className="p-4">
           <h3 className="text-white font-semibold notranslate">{image.title}</h3>
-          {image.description && (
-            <p className="text-gray-400 text-sm mt-1 line-clamp-2 notranslate">
-              {image.description}
-            </p>
-          )}
           <div className="flex items-center gap-2 mt-2">
             <ImageIcon className="w-4 h-4 text-gray-400" />
             <span className="text-gray-400 text-sm">{t("gallery_click_to_view")}</span>

@@ -69,7 +69,7 @@ const Hero = () => {
             >
               {t("hero_explore")}
             </button>
-            <button
+            {/* <button
               onClick={() => {
                 const timelineSection = document.getElementById("timeline");
                 if (timelineSection)
@@ -78,7 +78,7 @@ const Hero = () => {
               className="px-8 py-3 border border-white rounded-full font-semibold hover:bg-white/10 transition-all hover:scale-105 cursor-pointer"
             >
               {t("hero_view_timeline")}
-            </button>
+            </button> */}
           </motion.div>
         </motion.div>
       </div>
